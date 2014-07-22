@@ -4,10 +4,11 @@
 <meta charset="utf-8">
 <title>jQuery UI Accordion - Default functionality</title>
 <!-- download css http://jqueryui.com/themeroller/ -->
-<link rel="stylesheet" type="text/css" href="../css/jQueryUI/sunny/jquery-ui.css">
+<link rel="stylesheet" type="text/css" href="../css/jQueryUI/smoothness/jquery-ui.css">
 <script src="../libs/external/jquery-2.1.1.js"></script>
 <script src="../libs/external/jquery-ui.js"></script>
 <script src="../libs/WebSock.js"></script>
+<script src="../libs/Ports.js"></script>
 <script src="../libs/Tasks.js"></script>
 
 <!-- http://en.wikipedia.org/wiki/JSONP -->
@@ -38,3 +39,41 @@
 </div>
 </body>
 </html>
+
+
+<!-- 
+desc "Lists information about a given task"
+                get ':name_service/:name' do
+                    Hash[task: task_by_name(params[:name_service], params[:name]).to_h]
+                end
+
+                desc "Lists all ports of the task"
+                get ':name_service/:name/ports' do
+                    task = task_by_name(params[:name_service], params[:name])
+                    ports = task.each_port.map(&:model)
+                    Hash[ports: ports.map(&:to_h)]
+                end
+
+                desc "returns information about the given port"
+                get ':name_service/:name/ports/:port_name' do
+                    port = port_by_task_and_name(*params.values_at('name_service', 'name', 'port_name'))
+                    Hash[port: port.model.to_h]
+                end
+
+                desc 'read a sample on the given port and returns it'
+                params do
+                    optional :timeout, type: Float, default: 2.0
+                    optional :poll_period, type: Float, default: 0.05
+                    optional :count, type: Integer
+                end
+                get ':name_service/:name/ports/:port_name/read' do
+                    port = port_by_task_and_name(*params.values_at('name_service', 'name', 'port_name'))
+
+
+
+ -->
+
+
+
+
+
