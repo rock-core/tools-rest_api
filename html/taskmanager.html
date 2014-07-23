@@ -8,6 +8,7 @@
 <script src="../libs/external/jquery-2.1.1.js"></script>
 <script src="../libs/external/jquery-ui.js"></script>
 <script src="../libs/WebSock.js"></script>
+<script src="../libs/Typelib.js"></script>
 <script src="../libs/Ports.js"></script>
 <script src="../libs/Tasks.js"></script>
 
@@ -16,16 +17,38 @@
 
 <link rel="stylesheet" href="../css/style.css">
 
+ <style>
+#accordion-resizer {
+padding: 10px;
+width: 350px;
+height: 220px;
+}
+</style>
 
 <script>
 	loadTasks();
+	 $(function() {
+		 $( "#accordion" ).accordion({
+			 collapsible: true,
+			 heightStyle: "content"
+		 });
+		 });
+/* 	 $(function() {
+		 $( "#accordion-resizer" ).resizable({
+		 minHeight: 140,
+		 minWidth: 200,
+		 resize: function() {
+		 $( "#accordion" ).accordion( "refresh" );
+		 }
+		 });
+		 }); */
 </script>
 
 
 
 </head>
 <body>
-
+<!-- <div id="accordion-resizer" class="ui-widget-content"> -->
 <div id="accordion">
 <!-- 	<h3>Section 1</h3>
 	<div>
@@ -37,6 +60,7 @@
 		</p>
 	</div> -->
 </div>
+<!-- </div> -->
 </body>
 </html>
 
