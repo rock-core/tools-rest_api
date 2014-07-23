@@ -53,7 +53,7 @@ function setPortData(taskname, portinfo){
 		text += "Value:";
 		portentry.innerHTML = text;
 		
-		var value = document.createElement("div");
+		var value = document.createElement("pre");
 		var dataid = taskname.replace("/","") + portinfo.name + "data" ;
 		value.setAttribute("id", dataid);
 		portentry.appendChild(value);
@@ -78,11 +78,11 @@ function updatePortValue(taskname, portinfo){
 		var id = taskname.replace("/","") + portinfo.name + "data";
 		var portentry = document.getElementById(id);
 			
-		//portentry.innerHTML = getTypeText(portinfo,data);
-		//portentry.innerHTML = data;
-		$(function() {
-			$('#'+id).JSONView(getTypeText(portinfo,data), {collapsed: true});
-		});
+		portentry.innerHTML = getTypeText(portinfo,data," ");
+		
+		//$(function() {
+			$('#'+id).JSONView(getTypeText(portinfo,data,""), {collapsed: true});
+		//});
 	});
 }
 
