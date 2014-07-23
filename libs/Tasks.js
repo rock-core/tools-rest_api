@@ -1,4 +1,21 @@
 
+function loadTasks(){
+	console.log( "loadTasks" );
+	var jsonloader = loadJSON("http://localhost:9292/tasks");
+	jsonloader.done(function(data){
+		insertTasks(data);
+	});	
+};
+
+function insertTasks(content) {
+	content.task_names.forEach(function(elem){
+		//console.log(elem);
+		addTask(elem);
+		//loadPorts(elem);
+	});
+	//(re-)load the accordion UI Template
+	$( "#accordion" ).accordion( "refresh" );
+};
 
 function addTask(taskname){
 	var accordion = document.getElementById("accordion");
@@ -11,27 +28,10 @@ function addTask(taskname){
 	taskentry.appendChild(document.createTextNode(taskname));
 }
 
-function insertTasks(content) {
-    //document.getElementById('output').innerHTML = content;
-	//document.getElementById("tasksjson").appendChild(document.createTextNode("callback"));
-	content.task_names.forEach(function(elem){
-		//console.log(elem);
-		addTask(elem);
-		//loadPorts(elem);
-	});
-	//(re-)load the accordion UI Template
-	$( "#accordion" ).accordion( "refresh" );
-};
 
 
 
-function loadTasks(){
-	console.log( "loadTasks" );
-//	console.log( tasksResponse() );
-	var jsonloader = jQuery.getJSON("http://localhost:9292/tasks");
-	jsonloader.done(function(data){
-		insertTasks(data);
-	});	
-};
+
+
 
 

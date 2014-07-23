@@ -4,14 +4,22 @@
 <meta charset="utf-8">
 <title>jQuery UI Accordion - Default functionality</title>
 <!-- download css http://jqueryui.com/themeroller/ -->
-<link rel="stylesheet" type="text/css" href="../css/jQueryUI/smoothness/jquery-ui.css">
+<!-- <link rel="stylesheet" type="text/css" href="../css/jQueryUI/smoothness/jquery-ui.css"> -->
+<link rel="stylesheet" type="text/css" href="../css/jQueryUI/sunny/jquery-ui.css">
 <script src="../libs/external/jquery-2.1.1.js"></script>
 <script src="../libs/external/jquery-ui.js"></script>
 <script src="../libs/WebSock.js"></script>
+<script src="../libs/JSON.js"></script>
 <script src="../libs/Typelib.js"></script>
 <script src="../libs/Ports.js"></script>
 <script src="../libs/Tasks.js"></script>
 
+<link rel="stylesheet" href="../libs/external/jquery-jsonview/dist/jquery.jsonview.css" />
+<script type="text/javascript" src="../libs/external/jquery-jsonview/dist/jquery.jsonview.js"></script>
+
+<!-- <script type="text/javascript" src="../libs/external/jquery.json2html/json2html.js"></script>
+<script type="text/javascript" src="../libs/external/jquery.json2html/jquery.json2html.js"></script>
+ -->
 <!-- http://en.wikipedia.org/wiki/JSONP -->
 <!-- <script type="application/javascript" src="http://localhost:9292/tasks?jsonp=tasksResponse"></script> -->
 
@@ -29,7 +37,7 @@ height: 220px;
 	loadTasks();
 	 $(function() {
 		 $( "#accordion" ).accordion({
-			 collapsible: true,
+			 //collapsible: true,
 			 heightStyle: "content"
 		 });
 		 });
@@ -48,6 +56,15 @@ height: 220px;
 
 </head>
 <body>
+
+<!-- <div title=" doc:">
+text <br><br> bla
+</div>
+<a title="This is some information for our tooltip." class="tooltip">CSS3 Tooltip</a>
+<a href="#" title="This is some information for our tooltip." class="tooltip"><span title="More">CSS3 Tooltip</span></a>
+
+ -->
+
 <!-- <div id="accordion-resizer" class="ui-widget-content"> -->
 <div id="accordion">
 <!-- 	<h3>Section 1</h3>
