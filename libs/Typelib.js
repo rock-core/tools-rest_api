@@ -13,3 +13,20 @@ function getTypeText(portinfo,type, seperator){
 	return "";
 };
 
+function getFormElement(fieldObject, name){
+	var input = document.createElement("input");
+	input.setAttribute("name",name);
+	input.setAttribute("type","number");
+	if (fieldObject.type.name == "/float"){
+		input.setAttribute("step","0.1");
+	}
+	else if (fieldObject.type.name == "/int32_t"){ 
+		input.setAttribute("type","number");
+		input.setAttribute("step","1");
+	}
+	else{
+		//return "type" + fieldObject.type.name + "not supported";
+	}
+	return input;
+	
+}
