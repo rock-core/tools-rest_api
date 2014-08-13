@@ -44,5 +44,7 @@ function startCollapsable(element, openname, closename){
 	});
 }
 
-
+function invertCollapseState(){
+	$('.collapsableheader').click();
+}
 

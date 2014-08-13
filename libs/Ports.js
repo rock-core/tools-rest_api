@@ -8,6 +8,12 @@ function loadPorts(taskname){
 	taskdata.innerHTML = "";
 	//console.log( url );
 	
+	var expandall = document.createElement("div");
+	expandall.innerHTML="invert views<br><br>";
+	expandall.setAttribute("onclick","invertCollapseState()");
+	expandall.setAttribute("class","clickable");
+	taskdata.appendChild(expandall);
+	
 	var port = portinfo[url];
 	if (typeof port == 'undefined'){
 		
@@ -21,7 +27,7 @@ function loadPorts(taskname){
 			insertPorts(taskname,data);
 		});
 	}else{
-		console.log("loaded ports of  "+ taskname);
+		//console.log("loaded ports of  "+ taskname);
 		insertPorts(taskname,port);
 	}
 	
@@ -29,11 +35,8 @@ function loadPorts(taskname){
 
 function insertPorts(taskname,content) {
 	//console.log( "insertPorts" );
-	console.log(content);
-	
-	var taskdata = document.getElementById(taskname+"Data");
-	//taskdata.innerHTML = JSON.stringify(content);
-	
+	//console.log(content);
+		
 	content.ports.forEach(function(elem){
 		//console.log(elem);
 		if (elem.direction=="output"){
@@ -85,7 +88,7 @@ function addPort(taskname,content){
 	}
 	
 	taskdata.appendChild(document.createElement("br"));
-	taskdata.appendChild(document.createElement("br"));
+	//taskdata.appendChild(document.createElement("br"));
 	
 	
 }
@@ -108,16 +111,17 @@ function setPortData(taskname, portinfo){
 			value = document.createElement("div");
 			value.setAttribute("id", dataid);
 		}else{
-			var pre = document.createElement("pre");
-			pre.setAttribute("id", dataid);
-			value = createCollapsable(pre,"View","Close");
+			if (portinfo.type.class == "Typelib::CompoundType" && portinfo.type.name != "/base/Time"){
+				var pre = document.createElement("pre");
+				pre.setAttribute("id", dataid);
+				value = createCollapsable(pre,"View","Close");	
+			}else{
+				value = document.createElement("div");
+				value.setAttribute("id", dataid); 
+			}
+			
 			
 		}
-		
-		
-		
-		
-		
 		
 		portentry.appendChild(value);
 

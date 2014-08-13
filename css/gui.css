@@ -18,3 +18,8 @@
     display: none;
     padding : 5px;
 }
+
+.clickable{
+	cursor: pointer;
+    font-weight: bold;
+}
