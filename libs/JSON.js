@@ -16,19 +16,30 @@ function loadJSON(url){
 }
 
 function sendJSON(url,data){
-	var jsonloader = $.post( url, data, function() {
-		console.log( "success" );
-		})
-		.done(function() {
-		console.log( "second success" );
-		})
-		.fail(function() {
-		console.log( "error" );
-		})
-		.always(function() {
-		console.log( "complete" );
-		});
-	return jsonloader;
+	
+	return $.ajax ({
+	    url: url,
+	    type: "POST",
+	    data: JSON.stringify(data),
+	    dataType: "json",
+	    success: function(){
+
+	    }
+	});
+	
+//	var jsonloader = $.post( url, data, function() {
+//		console.log( "success" );
+//		})
+//		.done(function() {
+//		console.log( "second success" );
+//		})
+//		.fail(function() {
+//		console.log( "error" );
+//		})
+//		.always(function() {
+//		console.log( "complete" );
+//		});
+//	return jsonloader;
 }
 
 function sendForm(name){
@@ -52,10 +63,10 @@ function sendForm(name){
 	//var dat = JSON.stringify($(form).serializeArray());
 	var command = {};
 	command["command"] = formdata;
-	var dat = JSON.stringify(command);
+	//var dat = JSON.stringify(command);
 	
-	console.log(dat);
-	sendJSON(url,dat);
+	//console.log(dat);
+	sendJSON(url,command);
 }
 
 

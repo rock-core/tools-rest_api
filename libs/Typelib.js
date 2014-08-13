@@ -41,11 +41,9 @@ function getPortContentAsText(portinfo,type, seperator){
 			var date = new Date (type.sample.microseconds/1000);
 			var res = date.toLocaleString();
 			console.log(res);
-			return res
-			//return JSON.stringify(date,null,seperator);
+			return res;
 		} 
 		return JSON.stringify(type.sample,null,seperator);
-		console.log(text);
 	}else if (portinfo.type.class == "Typelib::opaque"){
 		return JSON.stringify(type.sample,null,seperator);
 	}
@@ -89,7 +87,7 @@ function generateForm(taskname,portinfo,id){
 	
 	var form = document.createElement("form");
 	//console.log(portinfo);
-	var action = "http://localhost:9292/tasks/"+taskname+"/ports/"+portinfo.name;
+	var action = "http://localhost:9292/tasks/"+taskname+"/ports/"+portinfo.name+"/write";
 	form.setAttribute("action",action);
 	form.setAttribute("method","post");
 	form.setAttribute("id","form"+id);
