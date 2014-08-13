@@ -1,6 +1,6 @@
 
 
-
+var portinfo = {};
 
 function loadPorts(taskname){
 	var url = "http://localhost:9292/tasks/"+taskname+"/ports";
@@ -8,12 +8,23 @@ function loadPorts(taskname){
 	taskdata.innerHTML = "";
 	//console.log( url );
 	
-	var jsonportloader = loadJSON( url );
+	var port = portinfo[url];
+	if (typeof port == 'undefined'){
+		
+		console.log("requesting ports of  "+ taskname);
+		
+		var jsonportloader = loadJSON( url );
+		
+		jsonportloader.done(function(data){
+			//console.log( taskname );
+			portinfo[url] = data;
+			insertPorts(taskname,data);
+		});
+	}else{
+		console.log("loaded ports of  "+ taskname);
+		insertPorts(taskname,port);
+	}
 	
-	jsonportloader.done(function(data){
-		//console.log( taskname );
-		insertPorts(taskname,data);
-	});
 };
 
 function insertPorts(taskname,content) {
