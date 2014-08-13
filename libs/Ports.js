@@ -91,17 +91,23 @@ function setPortData(taskname, portinfo){
 		portentry.appendChild(p);
 		
 		var value;
+		var dataid = taskname.replace("/","") + portinfo.name + "data" ;
+		
 		if (portinfo.direction=="input"){
-			value = document.createElement("div");	
+			value = document.createElement("div");
+			value.setAttribute("id", dataid);
 		}else{
-			value = document.createElement("pre");
+			var pre = document.createElement("pre");
+			pre.setAttribute("id", dataid);
+			value = createCollapsable(pre,"View","Close");
+			
 		}
 		
 		
 		
 		
-		var dataid = taskname.replace("/","") + portinfo.name + "data" ;
-		value.setAttribute("id", dataid);
+		
+		
 		portentry.appendChild(value);
 
 }
@@ -114,12 +120,18 @@ function updatePortValue(taskname, portinfo){
 		//console.log(data) 
 		var id = taskname.replace("/","") + portinfo.name + "data";
 		var portentry = document.getElementById(id);
-			
-		portentry.innerHTML = getTypeText(portinfo,data," ");
 		
-		//$(function() {
-			$('#'+id).JSONView(getTypeText(portinfo,data,""), {collapsed: true});
-		//});
+		var text = getPortContentAsText(portinfo,data," ");
+		
+		if (text[0] == '{'){
+			//assume JSON text format
+			$('#'+id).JSONView(getPortContentAsText(portinfo,data,""), {collapsed: false});			
+		}else{
+			portentry.setAttribute("style","color:blue");
+			portentry.innerHTML = text;	
+		}
+
+		
 	});
 }
 

@@ -28,7 +28,6 @@ function createCollapsable(content, openname, closename){
 //to be called after adding to doc, change click behavior
 function startCollapsable(element, openname, closename){
 	$(element).click(function () {
-		console.log("coll");
 		$header = $(this);
 		//getting the next element
 		$content = $header.next();
