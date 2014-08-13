@@ -4,7 +4,7 @@ var types = {};
 
 function getTypeOf(url, callback){
 	var type = types[url];
-	console.log(types);
+	//console.log(types);
 	if (typeof type == 'undefined'){
 		//request
 		console.log("requesting type of port "+ url);
@@ -32,15 +32,22 @@ function readTypeInfo(url, callback){
 
 
 
-function getTypeText(portinfo,type, seperator){
+function getPortContentAsText(portinfo,type, seperator){
 	
 	if (portinfo.type.class == "Typelib::NumericType"){
 		return type.sample
 	}else if (portinfo.type.class == "Typelib::CompoundType"){
-		return JSON.stringify(type,null,seperator);
+		if (portinfo.type.name == "/base/Time"){
+			var date = new Date (type.sample.microseconds/1000);
+			var res = date.toLocaleString();
+			console.log(res);
+			return res
+			//return JSON.stringify(date,null,seperator);
+		} 
+		return JSON.stringify(type.sample,null,seperator);
 		console.log(text);
 	}else if (portinfo.type.class == "Typelib::opaque"){
-		return JSON.stringify(type,null,seperator);
+		return JSON.stringify(type.sample,null,seperator);
 	}
 	
 	return "";
