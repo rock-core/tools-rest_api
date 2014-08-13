@@ -24,9 +24,19 @@ function insertPorts(taskname,content) {
 	//taskdata.innerHTML = JSON.stringify(content);
 	
 	content.ports.forEach(function(elem){
-		addPort(taskname,elem);
+		console.log(elem);
+		if (elem.direction=="output"){
+			addPort(taskname,elem);
+		}
+	});
+	content.ports.forEach(function(elem){
+		console.log(elem);
+		if (elem.direction=="input"){
+			addPort(taskname,elem);
+		}
 	});
 };
+
 
 function addPort(taskname,content){
 	
@@ -42,50 +52,20 @@ function addPort(taskname,content){
 	}else if (content.direction == "input"){
 		//TODO: create inputs and POST
 		//request typelib info
+		
+		//async call to the server, get the data type information
 		readTypeInfo(taskname,content.name,function(portinfo){
 			
-			console.log(portinfo);
-			
+			//get html element to write to
 			var id = taskname.replace("/","") + content.name + "data";
 			var portdata = document.getElementById(id);
-//			portdata.innerHTML = JSON.stringify(data);
-//			$('#'+id).JSONView(getTypeText(content,data,""), {collapsed: false});
+
+			//generate a html from from the type information 
+			var form = generateForm(taskname, portinfo, id);
 			
-			var form = document.createElement("form");
-			var action = "http://localhost:9292/tasks/"+taskname+"/ports/"+content.name;
-			form.setAttribute("action",action);
-			form.setAttribute("method","post");
-			form.setAttribute("id","form"+id);
-			portdata.appendChild(form);
-			var table = document.createElement("table");
-			form.appendChild(table);
-			
-			var submit = document.createElement("input");
-			submit.setAttribute("type","button");
-			submit.setAttribute("value","submit");
-			submit.setAttribute("onclick","sendForm(\"form"+id+"\")")
-			form.appendChild(submit); 
-				//JSON.stringify(data) +
-			//TODO for loop over fields, create form 
-			
-			//if ()
-			
-			for (var index = 0;index < portinfo.type.fields.length;index++){
-				var tr = document.createElement("tr");
-				table.appendChild(tr);
-				
-				var td = document.createElement("td");
-				tr.appendChild(td);
-				td.innerHTML = portinfo.type.fields[index].name;
-				
-				td = document.createElement("td");
-				tr.appendChild(td);
-				td.appendChild(getFormElement(portinfo.type.fields[index],portinfo.type.fields[index].name));
-				//form.innerHTML += "</td><br>";
-			}
-			
-			//form.innerHTML +=	"</tr></table>";
-			
+			var coll = createCollapsable(form,"Edit","Close");	
+
+			portdata.appendChild(coll);
 			
 		});
 		

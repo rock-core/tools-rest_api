@@ -1,16 +1,16 @@
 
 function loadJSON(url){
 	var jsonloader = $.getJSON( url, function() {
-		console.log( "success" );
+		//console.log( "success" );
 		})
 		.done(function() {
-		console.log( "second success" );
+		//console.log( "second success" );
 		})
 		.fail(function() {
-		console.log( "error" );
+		console.log( "error reading: " + url);
 		})
 		.always(function() {
-		console.log( "complete" );
+		//console.log( "complete" );
 		});
 	return jsonloader;
 }
@@ -38,10 +38,27 @@ function sendForm(name){
 	console.log(form);
 	var url = form.action;
 	//http://stackoverflow.com/questions/1255948/post-data-in-json-format-with-javascript
-	var dat = JSON.stringify($(form).serializeArray());
+	
+	var formdata = {};
+	for (var index = 0; index < form.length; index++){
+		var input = form[index];
+	    if (input.name) {
+	    	formdata[input.name] = input.value;
+	    }
+	}
+	
+	console.log(formdata);
+	
+	//var dat = JSON.stringify($(form).serializeArray());
+	var command = {};
+	command["command"] = formdata;
+	var dat = JSON.stringify(command);
+	
 	console.log(dat);
 	sendJSON(url,dat);
 }
+
+
 
 //also returns object, not TEXT (mime type from server)
 //function loadText(url){
