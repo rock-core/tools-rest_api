@@ -11,7 +11,7 @@ function loadPorts(taskname){
 	var jsonportloader = loadJSON( url );
 	
 	jsonportloader.done(function(data){
-		console.log( taskname );
+		//console.log( taskname );
 		insertPorts(taskname,data);
 	});
 };
@@ -24,13 +24,13 @@ function insertPorts(taskname,content) {
 	//taskdata.innerHTML = JSON.stringify(content);
 	
 	content.ports.forEach(function(elem){
-		console.log(elem);
+		//console.log(elem);
 		if (elem.direction=="output"){
 			addPort(taskname,elem);
 		}
 	});
 	content.ports.forEach(function(elem){
-		console.log(elem);
+		//console.log(elem);
 		if (elem.direction=="input"){
 			addPort(taskname,elem);
 		}
@@ -43,6 +43,7 @@ function addPort(taskname,content){
 	var taskdata = document.getElementById(taskname+"Data");
 	var portentry = document.createElement("div");
 	taskdata.appendChild(portentry);
+	portentry.setAttribute("class", "port");
 	portentry.setAttribute("title", content.doc);
 	portentry.setAttribute("id", taskname+"/"+content.name);
 	setPortData(taskname,content);
@@ -54,7 +55,8 @@ function addPort(taskname,content){
 		//request typelib info
 		
 		//async call to the server, get the data type information
-		readTypeInfo(taskname,content.name,function(portinfo){
+		var url = "http://localhost:9292/tasks/"+taskname+"/ports/"+content.name;
+		getTypeOf(url,function(portinfo){
 			
 			//get html element to write to
 			var id = taskname.replace("/","") + content.name + "data";
@@ -71,15 +73,22 @@ function addPort(taskname,content){
 		
 	}
 	
+	taskdata.appendChild(document.createElement("br"));
+	taskdata.appendChild(document.createElement("br"));
+	
+	
 }
 
 function setPortData(taskname, portinfo){
 	var portentry = document.getElementById(taskname+"/"+portinfo.name);
 		
 		
-		var text = portinfo.direction + ": " + portinfo.name + " : " + portinfo.type.name + "<br>";
-		//text += "Value:";
-		portentry.innerHTML = text;
+		var text = "<b>" + portinfo.name + "</b> : "+ portinfo.type.name + "<br>";
+		var p = document.createElement("div");
+		p.setAttribute("class","portheader");
+		p.innerHTML = text;
+		
+		portentry.appendChild(p);
 		
 		var value;
 		if (portinfo.direction=="input"){
@@ -94,9 +103,6 @@ function setPortData(taskname, portinfo){
 		var dataid = taskname.replace("/","") + portinfo.name + "data" ;
 		value.setAttribute("id", dataid);
 		portentry.appendChild(value);
-
-
-		portentry.innerHTML += "<br><br>";
 
 }
 
@@ -130,15 +136,4 @@ function readPort(taskname,portname,command){
 	});	
 }
 
-function readTypeInfo(taskname,portname,command){
-	var url = "http://localhost:9292/tasks/"+taskname+"/ports/"+portname;
-	console.log("readTypeInfo: " + url);
-	
-	//var jsonportreader = $.getJSON(url);
-	
-	var jsonportreader = loadJSON( url );
-	
-	jsonportreader.done(function(data){
-		command(data.port);
-	});	
-}
+

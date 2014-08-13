@@ -1,4 +1,37 @@
 
+
+var types = {};
+
+function getTypeOf(url, callback){
+	var type = types[url];
+	console.log(types);
+	if (typeof type == 'undefined'){
+		//request
+		console.log("requesting type of port "+ url);
+		readTypeInfo(url, callback);
+	}else{
+		callback(type);
+	}
+
+}
+
+
+function readTypeInfo(url, callback){
+
+	//console.log("readTypeInfo: " + url);
+	
+	//var jsonportreader = $.getJSON(url);
+	
+	var jsonportreader = loadJSON( url );
+	
+	jsonportreader.done(function(data){
+		types[url] = data.port;
+		callback(data.port);
+	});	
+}
+
+
+
 function getTypeText(portinfo,type, seperator){
 	
 	if (portinfo.type.class == "Typelib::NumericType"){
@@ -35,6 +68,7 @@ function getFormElement(fieldObject, name){
 		returncontainer.appendChild(input);
 	}else if(fieldObject.type.class == "Typelib::CompoundType"){
 		returncontainer.innerHTML= "Typelib::CompoundType cannot be set"
+		console.log(fieldObject);
 	}else if(fieldObject.type.class == "Typelib::ContainerType"){
 		returncontainer.innerHTML= "Typelib::ContainerType cannot be set"
 	}
@@ -47,7 +81,7 @@ function generateForm(taskname,portinfo,id){
 	//http://stackoverflow.com/questions/17460116/expand-and-collapse-a-div-using-javascript
 	
 	var form = document.createElement("form");
-	console.log(portinfo);
+	//console.log(portinfo);
 	var action = "http://localhost:9292/tasks/"+taskname+"/ports/"+portinfo.name;
 	form.setAttribute("action",action);
 	form.setAttribute("method","post");
@@ -62,17 +96,30 @@ function generateForm(taskname,portinfo,id){
 	submit.setAttribute("onclick","sendForm(\"form"+id+"\")")
 	form.appendChild(submit); 
 	
-	for (var index = 0;index < portinfo.type.fields.length;index++){
+	if (portinfo.type.class == "Typelib::NumericType"){
 		var tr = document.createElement("tr");
 		table.appendChild(tr);
 		
 		var td = document.createElement("td");
 		tr.appendChild(td);
-		td.innerHTML = portinfo.type.fields[index].name;
+		td.innerHTML = portinfo.name;
 		
 		td = document.createElement("td");
 		tr.appendChild(td);
-		td.appendChild(getFormElement(portinfo.type.fields[index],portinfo.type.fields[index].name));
+		td.appendChild(getFormElement(portinfo,portinfo.name));
+	}else if (portinfo.type.class == "Typelib::CompoundType"){
+		for (var index = 0;index < portinfo.type.fields.length;index++){
+			var tr = document.createElement("tr");
+			table.appendChild(tr);
+			
+			var td = document.createElement("td");
+			tr.appendChild(td);
+			td.innerHTML = portinfo.type.fields[index].name;
+			
+			td = document.createElement("td");
+			tr.appendChild(td);
+			td.appendChild(getFormElement(portinfo.type.fields[index],portinfo.type.fields[index].name));
+		}
 	}
 	return form;
 }
