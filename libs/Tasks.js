@@ -1,6 +1,6 @@
 
 function loadTasks(){
-	console.log( "loadTasks" );
+	//console.log( "loadTasks" );
 	var jsonloader = loadJSON("http://localhost:9292/tasks");
 	jsonloader.done(function(data){
 		insertTasks(data);
