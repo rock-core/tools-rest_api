@@ -70,7 +70,7 @@ function addPort(taskname,content){
 		
 		//async call to the server, get the data type information
 		var url = "http://localhost:9292/tasks/"+taskname+"/ports/"+content.name;
-		getTypeOf(url,function(portinfo){
+		getTypeInfoOf(url,function(portinfo){
 			
 			//get html element to write to
 			var id = taskname.replace("/","") + content.name + "data";

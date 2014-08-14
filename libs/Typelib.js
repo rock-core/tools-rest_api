@@ -2,8 +2,12 @@
 //type cache url->type
 var types = {};
 
-
-function getTypeOf(url, callback){
+/**
+ * caching wrapper for readTypeInfo(), in case the type was already requested, 
+ * @param url
+ * @param callback
+ */
+function getTypeInfoOf(url, callback){
 	var type = types[url];
 	//console.log(types);
 	if (typeof type == 'undefined'){
@@ -30,8 +34,14 @@ function readTypeInfo(url, callback){
 }
 
 
-
-function getPortContentAsText(portinfo,type, seperator){
+/**
+ * converts information read from a port to a string representation
+ * @param portinfopreviously read port information (contains data type, e.g int32_t) 
+ * @param type the type itseld, parsed from http://../read  
+ * @param seperator a seperator passed to JSON.stringify
+ * @returns string representing the data
+ */
+function getPortContentAsText(portinfo, type, seperator){
 	
 	if (portinfo.type.class == "Typelib::NumericType"){
 		return type.sample
@@ -49,6 +59,32 @@ function getPortContentAsText(portinfo,type, seperator){
 	
 	return "";
 };
+
+/**
+ * return a javascript type 
+ * @param url
+ * @param callback
+ */
+function getType(url, callback){
+	
+	
+	getTypeInfoOf(url, function(data){
+		var type = {};
+		console.log(data);
+		
+		if (data.type.class == "Typelib::NumericType"){
+			type[data.name] = nil;
+		}else if (data.type.class == "Typelib::CompoundType"){
+			for (var index = 0;index < data.type.fields.length;index++){
+				console.log(data.type.fields[index].name);
+				type[data.type.fields[index].name] = null;			
+			}
+		}
+		console.log(type);
+		callback(type);
+	});
+	
+}
 
 function getFormElement(fieldObject, name){
 	var returncontainer = document.createElement("div"); 

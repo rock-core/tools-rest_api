@@ -16,17 +16,22 @@ function loadJSON(url){
 }
 
 function sendJSON(url,data){
-	var jsonloader = $.post( url, data, function() {
-		console.log( "success" );
+	var command = {};
+	var json = JSON.stringify(data);
+	
+	command["command"] = json;
+	
+	var jsonloader = $.post( url, command, function() {
+		//console.log( "success" );
 		})
 		.done(function() {
-		console.log( "second success" );
+		//console.log( "second success" );
 		})
 		.fail(function() {
-		console.log( "error" );
+		console.log( "error writing" + url );
 		})
 		.always(function() {
-		console.log( "complete" );
+		//console.log( "complete" );
 		});
 	return jsonloader;
 }
@@ -53,11 +58,7 @@ function sendForm(name){
 	    }
 	}
 
-	var command = {};
-	var json = JSON.stringify(formdata);	
-	command["command"] = json;
-	
-	sendJSON(url,command);
+	sendJSON(url,formdata);
 }
 
 
