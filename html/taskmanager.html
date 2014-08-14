@@ -3,15 +3,26 @@
 <head>
 <meta charset="utf-8">
 <title>TaskManager</title>
-<!-- download css http://jqueryui.com/themeroller/ -->
+
+<!-- theme -->
+<!-- download css themes on http://jqueryui.com/themeroller/ -->
 <!-- <link rel="stylesheet" type="text/css" href="../css/jQueryUI/smoothness/jquery-ui.css"> -->
 <link rel="stylesheet" type="text/css" href="../css/jQueryUI/sunny/jquery-ui.css">
-<script src="../libs/external/jquery-2.1.1.js"></script>
-<script src="../libs/external/jquery-ui.js"></script>
 
+
+<!-- GUI scripts and styles -->
 <link rel="stylesheet" href="../css/gui.css">
 <script src="../libs/GUI.js"></script>
 
+<!-- external libs -->
+<link rel="stylesheet" href="../libs/external/jquery-jsonview/dist/jquery.jsonview.css" />
+<script src="../libs/external/jquery-2.1.1.js"></script>
+<script src="../libs/external/jquery-ui.js"></script>
+<script type="text/javascript" src="../libs/external/jquery-jsonview/dist/jquery.jsonview.js"></script>
+
+
+<!-- own libs and styles -->
+<link rel="stylesheet" href="../css/style.css">
 <script src="../libs/WebSock.js"></script>
 <script src="../libs/JSON.js"></script>
 <script src="../libs/Typelib.js"></script>
@@ -19,36 +30,17 @@
 <script src="../libs/Tasks.js"></script>
 
 
-<link rel="stylesheet" href="../libs/external/jquery-jsonview/dist/jquery.jsonview.css" />
-<script type="text/javascript" src="../libs/external/jquery-jsonview/dist/jquery.jsonview.js"></script>
-
-<!-- <script type="text/javascript" src="../libs/external/jquery.json2html/json2html.js"></script>
-<script type="text/javascript" src="../libs/external/jquery.json2html/jquery.json2html.js"></script>
- -->
-<!-- http://en.wikipedia.org/wiki/JSONP -->
-<!-- <script type="application/javascript" src="http://localhost:9292/tasks?jsonp=tasksResponse"></script> -->
-
-<link rel="stylesheet" href="../css/style.css">
-
-
-
- <style>
-#accordion-resizer {
-padding: 10px;
-width: 350px;
-height: 220px;
-}
-</style>
-
+<!-- initialization -->
 <script>
 	loadTasks();
 	 $(function() {
 		 $( "#accordion" ).accordion({
 			 collapsible: true,
-			 heightStyle: "content"
+			 //heightStyle: "content"
+			 heightStyle: "fill"
 		 });
 		 });
-/* 	 $(function() {
+	 $(function() {
 		 $( "#accordion-resizer" ).resizable({
 		 minHeight: 140,
 		 minWidth: 200,
@@ -56,71 +48,22 @@ height: 220px;
 		 $( "#accordion" ).accordion( "refresh" );
 		 }
 		 });
-		 }); */
-		 
+		 });
 </script>
-
 
 
 </head>
 <body>
-
-<!-- <div title=" doc:">
-text <br><br> bla
+<div id="accordion-resizer" class="ui-widget-content">
+	<div id="accordion">
+	<!-- example entry
+		<h3>Section 1</h3>
+		<div><p>content</p></div> 
+	-->
+	</div>
 </div>
-<a title="This is some information for our tooltip." class="tooltip">CSS3 Tooltip</a>
-<a href="#" title="This is some information for our tooltip." class="tooltip"><span title="More">CSS3 Tooltip</span></a>
-
- -->
-
-<!-- <div id="accordion-resizer" class="ui-widget-content"> -->
-<div id="accordion">
-<!-- 	<h3>Section 1</h3>
-	<div>
-		<p>
-		Mauris mauris ante, blandit et, ultrices a, suscipit eget, quam. Integer
-		ut neque. Vivamus nisi metus, molestie vel, gravida in, condimentum sit
-		amet, nunc. Nam a nibh. Donec suscipit eros. Nam mi. Proin viverra leo ut
-		odio. Curabitur malesuada. Vestibulum a velit eu ante scelerisque vulputate.
-		</p>
-	</div> -->
-</div>
-<!-- </div> -->
 </body>
 </html>
-
-
-<!-- 
-desc "Lists information about a given task"
-                get ':name_service/:name' do
-                    Hash[task: task_by_name(params[:name_service], params[:name]).to_h]
-                end
-
-                desc "Lists all ports of the task"
-                get ':name_service/:name/ports' do
-                    task = task_by_name(params[:name_service], params[:name])
-                    ports = task.each_port.map(&:model)
-                    Hash[ports: ports.map(&:to_h)]
-                end
-
-                desc "returns information about the given port"
-                get ':name_service/:name/ports/:port_name' do
-                    port = port_by_task_and_name(*params.values_at('name_service', 'name', 'port_name'))
-                    Hash[port: port.model.to_h]
-                end
-
-                desc 'read a sample on the given port and returns it'
-                params do
-                    optional :timeout, type: Float, default: 2.0
-                    optional :poll_period, type: Float, default: 0.05
-                    optional :count, type: Integer
-                end
-                get ':name_service/:name/ports/:port_name/read' do
-                    port = port_by_task_and_name(*params.values_at('name_service', 'name', 'port_name'))
-
-
-
- -->
 
 
 
