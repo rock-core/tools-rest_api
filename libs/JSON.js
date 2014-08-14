@@ -16,30 +16,19 @@ function loadJSON(url){
 }
 
 function sendJSON(url,data){
-	
-	return $.ajax ({
-	    url: url,
-	    type: "POST",
-	    data: JSON.stringify(data),
-	    dataType: "json",
-	    success: function(){
-
-	    }
-	});
-	
-//	var jsonloader = $.post( url, data, function() {
-//		console.log( "success" );
-//		})
-//		.done(function() {
-//		console.log( "second success" );
-//		})
-//		.fail(function() {
-//		console.log( "error" );
-//		})
-//		.always(function() {
-//		console.log( "complete" );
-//		});
-//	return jsonloader;
+	var jsonloader = $.post( url, data, function() {
+		console.log( "success" );
+		})
+		.done(function() {
+		console.log( "second success" );
+		})
+		.fail(function() {
+		console.log( "error" );
+		})
+		.always(function() {
+		console.log( "complete" );
+		});
+	return jsonloader;
 }
 
 function sendForm(name){
@@ -54,18 +43,20 @@ function sendForm(name){
 	for (var index = 0; index < form.length; index++){
 		var input = form[index];
 	    if (input.name) {
-	    	formdata[input.name] = input.value;
+	    	if (input.getAttribute("data-typelibtypeclass") == "Typelib::NumericType"){
+	    		console.log("Typelib::NumericType");
+	    		formdata[input.name] = parseFloat(input.value);
+	    	}else{
+	    		console.log("Typelib::OtherType");
+	    		formdata[input.name] = input.value;
+	    	}
 	    }
 	}
-	
-	console.log(formdata);
-	
-	//var dat = JSON.stringify($(form).serializeArray());
+
 	var command = {};
-	command["command"] = formdata;
-	//var dat = JSON.stringify(command);
+	var json = JSON.stringify(formdata);	
+	command["command"] = json;
 	
-	//console.log(dat);
 	sendJSON(url,command);
 }
 

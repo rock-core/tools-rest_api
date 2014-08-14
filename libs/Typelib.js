@@ -1,6 +1,7 @@
 
-
+//type cache url->type
 var types = {};
+
 
 function getTypeOf(url, callback){
 	var type = types[url];
@@ -12,16 +13,14 @@ function getTypeOf(url, callback){
 	}else{
 		callback(type);
 	}
-
 }
 
-
+/**
+ * reads type information from url and returns on receive
+ * @param url
+ * @param callback callback function to call on receive of the information
+ */
 function readTypeInfo(url, callback){
-
-	//console.log("readTypeInfo: " + url);
-	
-	//var jsonportreader = $.getJSON(url);
-	
 	var jsonportreader = loadJSON( url );
 	
 	jsonportreader.done(function(data){
@@ -58,6 +57,9 @@ function getFormElement(fieldObject, name){
 		input.setAttribute("name",name);
 		input.setAttribute("type","number");
 		input.setAttribute("value","0.0");
+		//data- is a html5 prefix, not evaluated by browsers (only for JS evaluation)
+		input.setAttribute("data-typelibtypename",fieldObject.type.name);
+		input.setAttribute("data-typelibtypeclass",fieldObject.type.class);
 		if (fieldObject.type.name == "/float"
 			|| fieldObject.type.name == "/double"
 		){
