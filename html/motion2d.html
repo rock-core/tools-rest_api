@@ -8,14 +8,16 @@
 
 <!-- GUI scripts and styles -->
 <link rel="stylesheet" href="../css/gui.css">
-<script src="../libs/GUI.js"></script>
+<script src="../libs/gui/Collapsable.js"></script>
 
 <!-- external libs -->
 <script src="../libs/external/jquery-2.1.1.js"></script>
 
 
 <!-- own libs and styles -->
-<link rel="stylesheet" href="../css/style.css">
+<link rel="stylesheet" type="text/css" media="screen" href="../css/screen.css">
+<link rel="stylesheet" type="text/css" media="handheld" href="../css/phone.css">
+
 <script src="../libs/api/WebSock.js"></script>
 <script src="../libs/api/JSON.js"></script>
 <script src="../libs/api/Typelib.js"></script>
@@ -49,8 +51,14 @@
 </script>
  -->
 
+<script>
+function init(){
+	motion2d('http://localhost:9292/tasks/localhost/sherpa_tt_mcs/ports/motion_command_2d',"m2d");
+}
+</script>
+
 </head>
-<body onload="motion2dinit('http://localhost:9292/tasks/localhost/sherpa_tt_mcs/ports/motion_command_2d');">
+<body onload="init();">
 
 <div id="m2d"></div>
 
