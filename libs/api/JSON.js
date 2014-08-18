@@ -28,12 +28,8 @@ function loadJSON(url){
  * @returns
  */
 function postJSON(url,data){
-	var command = {};
-	var json = JSON.stringify(data);
-	
-	command["command"] = json;
-	
-	var jsonloader = $.post( url, command, function() {
+
+	var jsonloader = $.post( url, data, function() {
 		//console.log( "success" );
 		})
 		.done(function() {

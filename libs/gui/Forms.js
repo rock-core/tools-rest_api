@@ -92,7 +92,12 @@ function sendForm(id, sendCallback){
 	    }
 	}
 
-	sendCallback(url,formdata);
+	var value = {};
+	var json = JSON.stringify(formdata);
+	
+	value["value"] = json;
+	
+	sendCallback(url,value);
 }
 
 
