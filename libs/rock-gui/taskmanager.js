@@ -124,7 +124,6 @@ function TaskManager(url,id){
 		
 		var taskmgr = this;
 		getPorts(this.url+"/tasks/"+taskname, function(data){
-			console.log(data)
 			taskmgr.insertPorts(taskname,data)
 		});
 	};
@@ -158,8 +157,6 @@ function TaskManager(url,id){
 		portentry.setAttribute("title", portinfo.doc);
 		portentry.setAttribute("id", this.id+taskname+"/"+portinfo.name);
 		this.setPortData(taskname,portinfo);
-		
-		console.log(portinfo);
 		
 		if (portinfo.direction == "output"){
 			this.updatePortValue(taskname,portinfo);

@@ -6,13 +6,12 @@ var taskinfo = {};
 function getTaskInfo(url, callback){
 
 	var task = taskinfo[url];
-	if (typeof task == 'undefined'){
-		
-		console.log("requesting task info of  "+ url);
+	if (typeof task === 'undefined'){	
+//		console.log("requesting task info of  "+ url);
 		loadTaskInfo(url, callback)
 
 	}else{
-		console.log(task);
+//		console.log(task);
 		callback(task);
 	}
 };

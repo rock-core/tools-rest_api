@@ -1,8 +1,5 @@
 
 function motion2d(url,id){
-	
-	console.log(id);
-	
 	window[id] = new Motion2d(url,id);
 	
 	getType(url,function(data){
@@ -12,14 +9,10 @@ function motion2d(url,id){
 		window[id].command.rotation = 0;
 		window[id].addMotion2DControl();
 	});
-	
-	console.log(window);
 }
 
 
 function Motion2d(url, id){
-	console.log(id);
-	
 	this.id = id;
 	this.command = {};
 	this.url = url;
@@ -31,26 +24,22 @@ function Motion2d(url, id){
 	}
 	
 	this.updateDisplay = function(){
-		console.log(this.id);
 		document.getElementById(this.id+"translation").innerHTML=this.command.translation;
 		document.getElementById(this.id+"rotation").innerHTML=this.command.rotation;
 	}
 	this.stop = function(){
 		this.command.translation = 0;
 		this.command.rotation = 0;
-		console.log(this.command);
 		postObjectAsJSON(this.url+"/write",this.command);
 		this.updateDisplay();
 	};
 	this.translation = function (value){
 		this.command.translation += value;
-		console.log(this.command);
 		postObjectAsJSON(this.url+"/write",this.command);
 		this.updateDisplay();
 	};
 	this.rotation = function (value){
 		this.command.rotation += value;
-		console.log(this.command);
 		postObjectAsJSON(this.url+"/write",this.command);
 		this.updateDisplay();
 	};

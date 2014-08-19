@@ -124,7 +124,7 @@ function createFormElement(portinfo){
 		returncontainer.appendChild(input);
 	}else if(portinfo.type.class == "Typelib::CompoundType"){
 		returncontainer.innerHTML= "Typelib::CompoundType cannot be set"
-		console.log(portinfo);
+		//console.log(portinfo);
 	}else if(portinfo.type.class == "Typelib::ContainerType"){
 		returncontainer.innerHTML= "Typelib::ContainerType cannot be set"
 	}
