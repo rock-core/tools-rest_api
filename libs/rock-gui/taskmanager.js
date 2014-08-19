@@ -225,7 +225,7 @@ function TaskManager(url,id){
 	};
 
 	this.updatePortValue = function(taskname, portinfo){
-		var readurl = this.url+"/tasks/"+taskname+"/ports/"+portinfo.name+"/read;
+		var readurl = this.url+"/tasks/"+taskname+"/ports/"+portinfo.name+"/read";
 		var taskmgr = this;
 		readPort(readurl, function(data){
 			//console.log(taskname+"/"+portinfo.name + " readPort")
