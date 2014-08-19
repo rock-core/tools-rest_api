@@ -66,8 +66,8 @@ function getMotion2DHTML(id){
 	<td></td> \
 	<td class="clickable"><img src="images/120px-Gnome-go-up.svg.png" alt="forward" onclick="window[\''+id+'\'].translation(0.1);" style="height: 50px; width: 50px;" ></td> \
 	<td><table> \
-			<tr><td style="float:right;">speed: </td><td><span id="'+id+'translation"></span></td></tr> \
-			<tr><td style="float:right;">rot: </td><td><span id="'+id+'rotation"></span></td></tr> \
+			<tr><td style="float:right;">speed: </td><td><span id="'+id+'translation">0</span></td></tr> \
+			<tr><td style="float:right;">rot: </td><td><span id="'+id+'rotation">0</span></td></tr> \
 		</table></td>\
 	</tr> \
 	<tr> \
