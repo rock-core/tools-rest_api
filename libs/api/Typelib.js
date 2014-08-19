@@ -12,7 +12,7 @@ function getTypeInfoOf(url, callback){
 	//console.log(types);
 	if (typeof type == 'undefined'){
 		//request
-		console.log("requesting type of port "+ url);
+		//console.log("requesting type of port "+ url);
 		loadTypeInfo(url, callback);
 	}else{
 		callback(type);
@@ -40,17 +40,16 @@ function loadTypeInfo(url, callback){
 function getType(url, callback){
 	getTypeInfoOf(url, function(data){
 		var type = {};
-		console.log(data);
-		
+//		console.log(data);	
 		if (data.type.class == "Typelib::NumericType"){
 			type[data.name] = nil;
 		}else if (data.type.class == "Typelib::CompoundType"){
 			for (var index = 0;index < data.type.fields.length;index++){
-				console.log(data.type.fields[index].name);
+				//console.log(data.type.fields[index].name);
 				type[data.type.fields[index].name] = null;			
 			}
 		}
-		console.log(type);
+//		console.log(type);
 		callback(type);
 	});
 	
