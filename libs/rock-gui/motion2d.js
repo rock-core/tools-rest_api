@@ -26,19 +26,19 @@ function stop(id){
 	command.translation = 0;
 	command.rotation = 0;
 	console.log(command);
-	postJSON(m2durl+"/write",command);
+	postObjectAsJSON(m2durl+"/write",command);
 	updateDisplay(id);
 };
 function translation(value,id){
 	command.translation += value;
 	console.log(command);
-	postJSON(m2durl+"/write",command);
+	postObjectAsJSON(m2durl+"/write",command);
 	updateDisplay(id);
 };
 function rotation(value,id){
 	command.rotation += value;
 	console.log(command);
-	postJSON(m2durl+"/write",command);
+	postObjectAsJSON(m2durl+"/write",command);
 	updateDisplay(id);
 };
 

@@ -51,7 +51,7 @@ function postJSON(url,data){
 		//console.log( "second success" );
 		})
 		.fail(function() {
-		console.log( "error writing" + url );
+		console.log( "error writing :" + url );
 		})
 		.always(function() {
 		//console.log( "complete" );
@@ -59,4 +59,15 @@ function postJSON(url,data){
 	return jsonloader;
 }
 
-
+/**
+ * Sends an JavaScript object as JSON formatted data using POST
+ * @param url
+ * @param data
+ * @returns
+ */
+function postObjectAsJSON(url,data){
+	var value = {};
+	var json = JSON.stringify(data);
+	value["value"] = json;
+	postJSON(url,value);
+}

@@ -22,7 +22,7 @@ function generateForm(url,portinfo,id){
 	var submit = document.createElement("input");
 	submit.setAttribute("type","button");
 	submit.setAttribute("value","submit");
-	submit.setAttribute("onclick","sendForm(\"form"+id+ "\",postJSON)")
+	submit.setAttribute("onclick","sendForm(\"form"+id+ "\",postObjectAsJSON)")
 	form.appendChild(submit); 
 	
 	if (portinfo.type.class == "Typelib::NumericType"){
@@ -89,14 +89,8 @@ function sendForm(id, sendCallback){
 	    		formdata[input.name] = input.value;
 	    	}
 	    }
-	}
-
-	var value = {};
-	var json = JSON.stringify(formdata);
-	
-	value["value"] = json;
-	
-	sendCallback(url,value);
+	}	
+	sendCallback(url,formdata);
 }
 
 
