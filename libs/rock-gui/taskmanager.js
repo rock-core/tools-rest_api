@@ -1,7 +1,9 @@
 
 function taskmanager(url,id){
 
-	loadTasks(url,insertTasks);
+	loadJSON(url+"/tasks",function(data){
+		insertTasks(url, data)
+	});
 	
 	addTaskManager(id);
 	
@@ -51,15 +53,37 @@ function insertTasks(url,content) {
 	$( "#accordion" ).accordion( "refresh" );
 };
 
+function updateTaskState(url, taskname){
+	console.log("gettingstate" +url);
+	//intentionnally using non-cached version
+	loadTaskInfo(url,function(taskinfo){
+		var state = document.getElementById(taskname+"State");
+		state.innerHTML=taskinfo.state
+		//$( "#accordion" ).accordion( "refresh" );
+	});
+}
+
 function addTask(url,taskname){
 	var accordion = document.getElementById("accordion");
 	var taskentry = document.createElement("h3");
 	taskentry.setAttribute("onclick", "addPorts(\""+url+"\", \""+taskname+"\" )");
+	
+	var taskentryname = document.createElement("div");
+	var taskentrystate = document.createElement("div");
+	taskentrystate.setAttribute("id", taskname+"State");
+	taskentrystate.setAttribute("style", "float: right;")
+	
+	taskentry.appendChild(taskentryname);
+	taskentryname.appendChild(document.createTextNode(taskname));
+	taskentryname.appendChild(taskentrystate);
+	
 	var taskdata = document.createElement("div");
 	taskdata.setAttribute("id", taskname+"Data");
 	accordion.appendChild(taskentry);
 	accordion.appendChild(taskdata);
-	taskentry.appendChild(document.createTextNode(taskname));
+
+	
+	updateTaskState(url+"/tasks/"+taskname,taskname);
 }
 
 function addPorts(url,taskname){
@@ -74,21 +98,25 @@ function addPorts(url,taskname){
 	expandall.setAttribute("class","clickable");
 	taskdata.appendChild(expandall);
 	
-	getPorts(url, taskname, insertPorts);
+	var porturl = url+"/tasks/"+taskname;
+	getPorts(porturl, function(data){
+		console.log(data)
+		insertPorts(porturl,taskname,data)
+	});
 
 }
 
-function insertPorts(url, taskname,content) {
+function insertPorts(url, taskname, ports) {
 	//console.log( "insertPorts" );
 	//console.log(content);
 		
-	content.ports.forEach(function(elem){
+	ports.forEach(function(elem){
 		//console.log(elem);
 		if (elem.direction=="output"){
 			addPort(url, taskname,elem);
 		}
 	});
-	content.ports.forEach(function(elem){
+	ports.forEach(function(elem){
 		//console.log(elem);
 		if (elem.direction=="input"){
 			addPort(url, taskname,elem);
@@ -96,32 +124,32 @@ function insertPorts(url, taskname,content) {
 	});
 };
 
-function addPort(url, taskname,content){
+function addPort(url, taskname, typeinfo){
 	
 	var taskdata = document.getElementById(taskname+"Data");
 	var portentry = document.createElement("div");
 	taskdata.appendChild(portentry);
 	portentry.setAttribute("class", "port");
-	portentry.setAttribute("title", content.doc);
-	portentry.setAttribute("id", taskname+"/"+content.name);
-	setPortData(taskname,content);
+	portentry.setAttribute("title", typeinfo.doc);
+	portentry.setAttribute("id", taskname+"/"+typeinfo.name);
+	setPortData(taskname,typeinfo);
 	
-	if (content.direction == "output"){
-		updatePortValue(url, taskname,content);
-	}else if (content.direction == "input"){
+	if (typeinfo.direction == "output"){
+		updatePortValue(url, taskname,typeinfo);
+	}else if (typeinfo.direction == "input"){
 		//TODO: create inputs and POST
 		//request typelib info
 		
 		//async call to the server, get the data type information
-		var murl = url+"/tasks/"+taskname+"/ports/"+content.name;
+		var murl = url+"/ports/"+typeinfo.name;
 		getTypeInfoOf(murl,function(portinfo){
 			
 			//get html element to write to
-			var id = taskname.replace("/","") + content.name + "data";
+			var id = taskname.replace("/","") + typeinfo.name + "data";
 			var portdata = document.getElementById(id);
 
 			//generate a html from from the type information 
-			var form = generateForm(url, taskname, portinfo, id);
+			var form = generateForm(url+"/ports/"+portinfo.name+"/write", portinfo, id);
 			
 			var coll = createCollapsable(form,"Edit","Close");	
 
@@ -172,8 +200,10 @@ function setPortData(taskname, portinfo){
 }
 
 function updatePortValue(url, taskname, portinfo){
-	var murl = url+"/tasks/"+taskname+"/ports/"+portinfo.name+"/read";
-	readPort(url, taskname,portinfo.name,function(data){
+	console.log(url);
+	var readurl = url+"/ports/"+portinfo.name+"/read";
+	console.log(readurl);
+	readPort(readurl, function(data){
 		//console.log(taskname+"/"+portinfo.name + " readPort")
 		//console.log(data) 
 		var id = taskname.replace("/","") + portinfo.name + "data";

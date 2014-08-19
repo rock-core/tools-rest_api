@@ -6,14 +6,13 @@
  * @param id
  * @returns
  */
-function generateForm(url,taskname,portinfo,id){
+function generateForm(url,portinfo,id){
 	
 	//http://stackoverflow.com/questions/17460116/expand-and-collapse-a-div-using-javascript
 	
 	var form = document.createElement("form");
 	//console.log(portinfo);
-	var action = url+"/tasks/"+taskname+"/ports/"+portinfo.name+"/write";
-	form.setAttribute("action",action);
+	form.setAttribute("action",url);
 	form.setAttribute("method","post");
 	form.setAttribute("id","form"+id);
 	
@@ -71,10 +70,10 @@ function generateForm(url,taskname,portinfo,id){
  * @param sendCallback callback function with two arguments (url,formdata)
  */
 function sendForm(id, sendCallback){
-	console.log(id);
+	//console.log(id);
 	//var form = document.forms[name];
 	var form = document.getElementById(id);
-	console.log(form);
+	//console.log(form);
 	var url = form.action;
 	//http://stackoverflow.com/questions/1255948/post-data-in-json-format-with-javascript
 	
@@ -83,10 +82,10 @@ function sendForm(id, sendCallback){
 		var input = form[index];
 	    if (input.name) {
 	    	if (input.getAttribute("data-typelibtypeclass") == "Typelib::NumericType"){
-	    		console.log("Typelib::NumericType");
+	    		//console.log("Typelib::NumericType");
 	    		formdata[input.name] = parseFloat(input.value);
 	    	}else{
-	    		console.log("Typelib::OtherType");
+	    		//console.log("Typelib::OtherType");
 	    		formdata[input.name] = input.value;
 	    	}
 	    }
