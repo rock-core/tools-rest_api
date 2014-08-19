@@ -36,7 +36,11 @@
 
 <script>
 function init(){
-	taskmanager('http://localhost:9292',"taskmanager");
+	var hostname = "localhost";
+	if (window.location.hostname != ""){
+		hostname = window.location.hostname;
+	} 
+	taskmanager('http://'+hostname+':9292',"taskmanager");
 }
 </script>
 

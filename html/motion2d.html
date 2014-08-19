@@ -53,7 +53,11 @@
 
 <script>
 function init(){
-	motion2d('http://localhost:9292/tasks/localhost/sherpa_tt_mcs/ports/motion_command_2d',"m2d");
+	var hostname = "localhost";
+	if (window.location.hostname != ""){
+		hostname = window.location.hostname;
+	} 
+	motion2d('http://'+hostname+':9292/tasks/localhost/sherpa_tt_mcs/ports/motion_command_2d',"m2d");
 }
 </script>
 
