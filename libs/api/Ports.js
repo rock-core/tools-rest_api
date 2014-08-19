@@ -8,18 +8,17 @@ var portinfo = {};
  * @param taskname
  * @param callback 
  */
-function getPorts(url, taskname, callback){
-	var murl = url+"/tasks/"+taskname+"/ports";
+function getPorts(url, callback){
 	
-	var port = portinfo[murl];
-	if (typeof port == 'undefined'){
+	var ports = portinfo[url];
+	if (typeof ports == 'undefined'){
 		
-		console.log("requesting ports of  "+ taskname);
-		loadPorts(url, taskname, callback)
+//		console.log("requesting ports of  "+ taskname);
+		loadPorts(url,callback);
 
 	}else{
 		//console.log("loaded ports of  "+ taskname);
-		callback(url, taskname, port);
+		callback(ports);
 	}
 };
 
@@ -30,16 +29,13 @@ function getPorts(url, taskname, callback){
  * @param callback
  * @returns
  */
-function loadPorts(url, taskname, callback){
-	var murl = url+"/tasks/"+taskname+"/ports";
-	var jsonportloader = loadJSON( murl );
-	
-	jsonportloader.done(function(data){
-		//console.log( taskname );
-		portinfo[murl] = data;
-		callback(url, taskname, data);
+function loadPorts(url, callback){
+	//cached version of task information, ports may be already loaded by 
+	getTaskInfo(url,function(taskdata){
+		portinfo[url] = taskdata.model.ports;
+		callback(taskdata.model.ports);
 	});
-	return jsonportloader;
+
 };
 
 /**
@@ -49,11 +45,11 @@ function loadPorts(url, taskname, callback){
  * @param portname
  * @param command
  */
-function readPort(url,taskname,portname,command){
-	var jsonportreader = loadJSON( url+"/tasks/"+taskname+"/ports/"+portname+"/read" );
+function readPort(url,callback){
+	var jsonportreader = getJSONLoader( url );
 	
 	jsonportreader.done(function(data){
-		command(data[0]);
+		callback(data[0]);
 	});
 	return jsonportreader;
 }

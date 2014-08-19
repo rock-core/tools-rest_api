@@ -25,9 +25,7 @@ function getTypeInfoOf(url, callback){
  * @param callback callback function to call on receive of the information
  */
 function loadTypeInfo(url, callback){
-	var jsonportreader = loadJSON( url );
-	
-	jsonportreader.done(function(data){
+	loadJSON(url,function(data){
 		types[url] = data.port;
 		callback(data.port);
 	});	

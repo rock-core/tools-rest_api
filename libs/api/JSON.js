@@ -1,16 +1,31 @@
 
 
 /**
+ * 
+ * @param url
+ * @param callback the callbacks data parameter contains an array "task_names"
+ */
+
+function loadJSON(url,callback){
+	//console.log( "loadTasks" );
+	var jsonloader = getJSONLoader(url);
+	jsonloader.done(function(data){
+		callback(data);
+	});	
+};
+
+
+/**
  * load JSON formatted data usinf GET
  * @param url
  * @returns Javascript object
  */
-function loadJSON(url){
+function getJSONLoader(url){
 	var jsonloader = $.getJSON( url, function() {
 		//console.log( "success" );
 		})
 		.done(function() {
-		//console.log( "second success" );
+			//console.log( "done" );
 		})
 		.fail(function() {
 		console.log( "error reading: " + url);
