@@ -33,38 +33,11 @@ function loadTypeInfo(url, callback){
 
 
 /**
- * converts information read from a port to a string representation
- * @param portinfopreviously read port information (contains data type, e.g int32_t) 
- * @param type the type itseld, parsed from http://../read  
- * @param seperator a seperator passed to JSON.stringify
- * @returns string representing the data
- */
-function getPortContentAsText(portinfo, type, seperator){
-	
-	if (portinfo.type.class == "Typelib::NumericType"){
-		return type.sample
-	}else if (portinfo.type.class == "Typelib::CompoundType"){
-		if (portinfo.type.name == "/base/Time"){
-			var date = new Date (type.sample.microseconds/1000);
-			var res = date.toLocaleString();
-			console.log(res);
-			return res;
-		} 
-		return JSON.stringify(type.sample,null,seperator);
-	}else if (portinfo.type.class == "Typelib::opaque"){
-		return JSON.stringify(type.sample,null,seperator);
-	}
-	
-	return "";
-};
-
-/**
  * return a javascript type that can be written to url
  * @param url
  * @param callback
  */
 function getType(url, callback){
-
 	getTypeInfoOf(url, function(data){
 		var type = {};
 		console.log(data);
