@@ -210,18 +210,28 @@ function TaskManager(url,id){
 			var value;
 			var dataid = this.id+taskname.replace("/","") + portinfo.name + "data" ;
 			
-			
-			
 			if (portinfo.direction=="input"){
 				div = document.createElement("div");
 				div.setAttribute("id", dataid);
+
 				value = createCollapsable(p, div,"+ ","- ");
 			}else{
-				
+
 				//if (portinfo.type.class == "Typelib::CompoundType" && portinfo.type.name != "/base/Time"){
 					var pre = document.createElement("pre");
 					pre.setAttribute("id", dataid);
-					value = createCollapsable(p, pre,"+ ","- ");	
+					
+					var container = document.createElement("div"); 
+					
+					var btn = document.createElement("input");
+					btn.setAttribute("type","button");
+					btn.setAttribute("value","reload");
+					btn.setAttribute("onclick","window['"+this.id+"'].updatePortValue('"+taskname+"','"+portinfo.name+"')");
+					
+					container.appendChild(btn);
+					container.appendChild(pre);
+					
+					value = createCollapsable(p, container,"+ ","- ");	
 				//}else{
 				//	value = document.createElement("div");
 				//	value.setAttribute("id", dataid); 
