@@ -11,7 +11,7 @@ function generateForm(url,portinfo,id){
 	//http://stackoverflow.com/questions/17460116/expand-and-collapse-a-div-using-javascript
 	
 	var form = document.createElement("form");
-	//console.log(portinfo);
+	console.log(portinfo);
 	form.setAttribute("action",url);
 	form.setAttribute("method","post");
 	form.setAttribute("id","form"+id);
@@ -123,7 +123,9 @@ function createFormElement(portinfo){
 		}
 		returncontainer.appendChild(input);
 	}else if(portinfo.type.class == "Typelib::CompoundType"){
-		returncontainer.innerHTML= "Typelib::CompoundType cannot be set"
+		console.log("Typelib::CompoundType");
+		console.log(portinfo);
+		returncontainer.innerHTML= "Typelib::CompoundType cannot be set";
 		//console.log(portinfo);
 	}else if(portinfo.type.class == "Typelib::ContainerType"){
 		returncontainer.innerHTML= "Typelib::ContainerType cannot be set"

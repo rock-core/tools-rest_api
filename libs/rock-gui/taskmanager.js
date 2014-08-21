@@ -131,6 +131,11 @@ function TaskManager(url,id){
 	this.insertPorts = function(taskname, ports) {
 		//console.log( "insertPorts" );
 		//console.log(content);
+		var taskdata = document.getElementById(this.id+taskname+"Data");
+		var head = document.createElement("h3");
+		head.innerHTML="OutputPorts";
+		taskdata.appendChild(head);
+			
 		var taskmgr = this;
 		ports.forEach(function(elem){
 			//console.log(elem);
@@ -138,6 +143,12 @@ function TaskManager(url,id){
 				taskmgr.addPort(taskname,elem);
 			}
 		});
+		
+		var head2 = document.createElement("h3");
+		head2.innerHTML="InputPorts";
+		taskdata.appendChild(head2);
+		
+		
 		ports.forEach(function(elem){
 			//console.log(elem);
 			if (elem.direction=="input"){
@@ -159,7 +170,7 @@ function TaskManager(url,id){
 		this.setPortData(taskname,portinfo);
 		
 		if (portinfo.direction == "output"){
-			this.updatePortValue(taskname,portinfo);
+			this.updatePortValue(taskname,portinfo.name);
 		}else if (portinfo.direction == "input"){		
 			var porturl = this.url+"/tasks/"+taskname+"/ports/"+portinfo.name;
 			var taskmgr = this;
@@ -172,10 +183,8 @@ function TaskManager(url,id){
 
 				//generate a html from from the type information 
 				var form = generateForm(url+"/ports/"+portinfo.name+"/write", portinfo, id);
-				
-				var coll = createCollapsable(form,"Edit","Close");	
 
-				portdata.appendChild(coll);
+				portdata.appendChild(form);
 				
 			});
 			
@@ -201,44 +210,51 @@ function TaskManager(url,id){
 			var value;
 			var dataid = this.id+taskname.replace("/","") + portinfo.name + "data" ;
 			
+			
+			
 			if (portinfo.direction=="input"){
-				value = document.createElement("div");
-				value.setAttribute("id", dataid);
+				div = document.createElement("div");
+				div.setAttribute("id", dataid);
+				value = createCollapsable(p, div,"+ ","- ");
 			}else{
-				if (portinfo.type.class == "Typelib::CompoundType" && portinfo.type.name != "/base/Time"){
+				
+				//if (portinfo.type.class == "Typelib::CompoundType" && portinfo.type.name != "/base/Time"){
 					var pre = document.createElement("pre");
 					pre.setAttribute("id", dataid);
-					value = createCollapsable(pre,"View","Close");	
-				}else{
-					value = document.createElement("div");
-					value.setAttribute("id", dataid); 
-				}
-				
-				
+					value = createCollapsable(p, pre,"+ ","- ");	
+				//}else{
+				//	value = document.createElement("div");
+				//	value.setAttribute("id", dataid); 
+				//}
 			}
 			
 			portentry.appendChild(value);
 
 	};
 
-	this.updatePortValue = function(taskname, portinfo){
-		var readurl = this.url+"/tasks/"+taskname+"/ports/"+portinfo.name+"/read";
+	this.updatePortValue = function(taskname, portname){
 		var taskmgr = this;
-		readPort(readurl, function(data){
-			//console.log(taskname+"/"+portinfo.name + " readPort")
-			//console.log(data) 
-			var id = taskmgr.id+ taskname.replace("/","") + portinfo.name + "data";
-			var portentry = document.getElementById(id);
+		getPort( this.url+"/tasks/"+taskname+"/ports/"+portname ,function(portinfo){
+		
+			var readurl = taskmgr.url+"/tasks/"+taskname+"/ports/"+portinfo.name+"/read";
 			
-			var text = getPortContentAsText(portinfo,data," ");
-			
-			if (text[0] == '{'){
-				//assume JSON text format
-				$('#'+id).JSONView(getPortContentAsText(portinfo,data,""), {collapsed: false});			
-			}else{
-				portentry.setAttribute("style","color:blue");
-				portentry.innerHTML = text;	
-			}
+
+			readPort(readurl, function(data){
+				//console.log(taskname+"/"+portinfo.name + " readPort")
+				//console.log(data) 
+				var id = taskmgr.id+ taskname.replace("/","") + portinfo.name + "data";
+				var portentry = document.getElementById(id);
+				
+				var text = getPortContentAsText(portinfo,data," ");
+				
+				if (text[0] == '{'){
+					//assume JSON text format
+					$('#'+id).JSONView(getPortContentAsText(portinfo,data,""), {collapsed: false});			
+				}else{
+					portentry.setAttribute("style","color:blue");
+					portentry.innerHTML = text;	
+				}
+			});
 		});
 	};
 	

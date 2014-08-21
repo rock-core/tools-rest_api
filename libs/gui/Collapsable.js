@@ -3,14 +3,17 @@
 
 
 
-function createCollapsable(content, openname, closename){
+function createCollapsable(head, content, openname, closename){
 	var outer = document.createElement("div");
 	outer.setAttribute("class","collapsablecontainer");
 	
-	var head = document.createElement("div");
+	//var head = document.createElement("div");
 	head.setAttribute("class","collapsableheader");
-	head.innerHTML = openname;
+	//head.innerHTML = openname;
 	
+	var mark = document.createElement("span");
+	mark.innerHTML=openname
+	$(head).prepend(mark);
 	
 	var coll = document.createElement("div");
 	coll.setAttribute("class","collapsablecontent");
@@ -32,10 +35,10 @@ function startCollapsable(element, openname, closename){
 		//getting the next element
 		$content = $header.next();
 		//open up the content needed - toggle the slide- if visible, slide up, if not slidedown.
-		$content.slideToggle(500, function () {
+		$content.slideToggle(300, function () {
 			//execute this after slideToggle is done
 			//change text of header based on visibility of content div
-			$header.text(function () {
+			$header.children("span").text(function () {
 				//change text based on condition
 				return $content.is(":visible") ? closename : openname;
 			});
