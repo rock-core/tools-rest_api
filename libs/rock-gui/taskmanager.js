@@ -123,20 +123,32 @@ function TaskManager(url,id){
 		taskdata.appendChild(expandall);
 		
 		var taskmgr = this;
-		getPorts(this.url+"/tasks/"+taskname, function(data){
+		
+		getTaskInfo(this.url+"/tasks/"+taskname, function(data){
 			taskmgr.insertPorts(taskname,data)
 		});
+//		getPorts(this.url+"/tasks/"+taskname, function(data){
+//			taskmgr.insertPorts(taskname,data)
+//		});
 	};
 
-	this.insertPorts = function(taskname, ports) {
+	this.insertPorts = function(taskname, taskinfo) {
+		
+		var ports = taskinfo.model.ports;
+		
 		//console.log( "insertPorts" );
-		//console.log(content);
+		console.log(taskinfo);
 		var taskdata = document.getElementById(this.id+taskname+"Data");
+		
+		var taskmgr = this;
+		
+		//input ports
 		var head = document.createElement("h3");
 		head.innerHTML="OutputPorts";
-		taskdata.appendChild(head);
-			
-		var taskmgr = this;
+		var out =  document.createElement("h3");
+		out.setAttribute("id",this.id+taskname+"Data"+"Out");
+		var outcoll =  createCollapsable(head,out,"+ ", "- ");
+		taskdata.appendChild(outcoll);
 		ports.forEach(function(elem){
 			//console.log(elem);
 			if (elem.direction=="output"){
@@ -144,16 +156,30 @@ function TaskManager(url,id){
 			}
 		});
 		
+		//output ports
 		var head2 = document.createElement("h3");
 		head2.innerHTML="InputPorts";
-		taskdata.appendChild(head2);
-		
-		
+		var input =  document.createElement("h3");
+		input.setAttribute("id",this.id+taskname+"Data"+"In");
+		var incoll =  createCollapsable(head2,input,"+ ", "- ");
+		taskdata.appendChild(incoll);
 		ports.forEach(function(elem){
 			//console.log(elem);
 			if (elem.direction=="input"){
 				taskmgr.addPort(taskname,elem);
 			}
+		});
+		
+		var head3 = document.createElement("h3");
+		head3.innerHTML="Properties";
+		var params =  document.createElement("h3");
+		params.setAttribute("id",this.id+taskname+"Data"+"Properties");
+		var paramscoll =  createCollapsable(head3,params,"+ ", "- ");
+		taskdata.appendChild(paramscoll);
+		
+		taskinfo.model.properties.forEach(function(elem){
+			console.log(elem);
+			taskmgr.addProperty(taskname,elem);
 		});
 	};
 
@@ -163,15 +189,25 @@ function TaskManager(url,id){
 		
 		var taskdata = document.getElementById(this.id+taskname+"Data");
 		var portentry = document.createElement("div");
-		taskdata.appendChild(portentry);
+		
 		portentry.setAttribute("class", "port");
 		portentry.setAttribute("title", portinfo.doc);
 		portentry.setAttribute("id", this.id+taskname+"/"+portinfo.name);
-		this.setPortData(taskname,portinfo);
 		
 		if (portinfo.direction == "output"){
+			var outdata = document.getElementById(this.id+taskname+"Data"+"Out");
+			outdata.appendChild(portentry);
+		}else if (portinfo.direction == "input"){
+			var indata = document.getElementById(this.id+taskname+"Data"+"In");
+			indata.appendChild(portentry);
+		}
+		
+		this.setPortData(taskname,portinfo);
+		
+		//fill the content
+		if (portinfo.direction == "output"){
 			this.updatePortValue(taskname,portinfo.name);
-		}else if (portinfo.direction == "input"){		
+		}else if (portinfo.direction == "input"){
 			var porturl = this.url+"/tasks/"+taskname+"/ports/"+portinfo.name;
 			var taskmgr = this;
 			//async call to the server, get the data type information
@@ -190,7 +226,7 @@ function TaskManager(url,id){
 			
 		}
 		
-		taskdata.appendChild(document.createElement("br"));
+		//taskdata.appendChild(document.createElement("br"));
 		//taskdata.appendChild(document.createElement("br"));
 		
 		
@@ -208,27 +244,33 @@ function TaskManager(url,id){
 			portentry.appendChild(p);
 			
 			var value;
-			var dataid = this.id+taskname.replace("/","") + portinfo.name + "data" ;
+			var dataid = this.id+taskname.replace("/","") + portinfo.name;
+			
+			
+			var container = document.createElement("div");
 			
 			if (portinfo.direction=="input"){
-				div = document.createElement("div");
-				div.setAttribute("id", dataid);
+				container.setAttribute("id", dataid + "data");
 
-				value = createCollapsable(p, div,"+ ","- ");
+				value = createCollapsable(p, container,"+ ","- ");
 			}else{
 
 				//if (portinfo.type.class == "Typelib::CompoundType" && portinfo.type.name != "/base/Time"){
 					var pre = document.createElement("pre");
-					pre.setAttribute("id", dataid);
+					pre.setAttribute("id", dataid + "data");
 					
-					var container = document.createElement("div"); 
+					var buttons = document.createElement("span");
+					buttons.setAttribute("id", dataid + "buttons");
+					
 					
 					var btn = document.createElement("input");
 					btn.setAttribute("type","button");
 					btn.setAttribute("value","reload");
 					btn.setAttribute("onclick","window['"+this.id+"'].updatePortValue('"+taskname+"','"+portinfo.name+"')");
 					
+					//buttons.appendChild(btn);
 					container.appendChild(btn);
+					container.appendChild(buttons);
 					container.appendChild(pre);
 					
 					value = createCollapsable(p, container,"+ ","- ");	
@@ -252,14 +294,29 @@ function TaskManager(url,id){
 			readPort(readurl, function(data){
 				//console.log(taskname+"/"+portinfo.name + " readPort")
 				//console.log(data) 
-				var id = taskmgr.id+ taskname.replace("/","") + portinfo.name + "data";
-				var portentry = document.getElementById(id);
+				var id = taskmgr.id+ taskname.replace("/","") + portinfo.name;
+				var portentry = document.getElementById(id+ "data");
+				var buttons = document.getElementById(id+ "buttons");
+				
+				//delete existing buttons
+				while (buttons.firstChild) {
+					buttons.removeChild(buttons.firstChild);
+				}
 				
 				var text = getPortContentAsText(portinfo,data," ");
 				
 				if (text[0] == '{'){
 					//assume JSON text format
-					$('#'+id).JSONView(getPortContentAsText(portinfo,data,""), {collapsed: false});			
+						
+					//var toggle = createButton("open/close all","$(\"#"+id+"data\").JSONView('toggle');");
+					//buttons.appendChild(toggle);
+					
+					var expand = createButton("expand","$(\"#"+id+"data\").JSONView('expand');");
+					buttons.appendChild(expand);
+					var collapse = createButton("collapse","$(\"#"+id+"data\").JSONView('collapse');");
+					buttons.appendChild(collapse);
+					
+					$('#'+id+"data").JSONView(getPortContentAsText(portinfo,data,""), {collapsed: false});			
 				}else{
 					portentry.setAttribute("style","color:blue");
 					portentry.innerHTML = text;	
@@ -267,6 +324,24 @@ function TaskManager(url,id){
 			});
 		});
 	};
+	
+	this.addProperty = function(taskname,info){
+		console.log("addProp");
+		var propentry = document.getElementById(this.id+taskname+"Data"+"Properties");
+		
+		var head = document.createElement("span");
+		
+		head.innerHTML=info.name;
+		
+		var content = document.createTextNode(info.type.class);
+		
+		var coll = createCollapsable(head,content,"+ ", "- ");
+		
+		coll.setAttribute("title", info.doc);
+		
+		propentry.appendChild(coll );
+		
+	}
 	
 }
 
