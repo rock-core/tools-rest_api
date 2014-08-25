@@ -101,17 +101,17 @@ function readPort(url,callback){
 function getPortContentAsText(portinfo, type, seperator){
 	
 	if (portinfo.type.class == "Typelib::NumericType"){
-		return type.sample
+		return type.value
 	}else if (portinfo.type.class == "Typelib::CompoundType"){
 		if (portinfo.type.name == "/base/Time"){
-			var date = new Date (type.sample.microseconds/1000);
+			var date = new Date (type.value.microseconds/1000);
 			var res = date.toLocaleString();
 			console.log(res);
 			return res;
 		} 
-		return JSON.stringify(type.sample,null,seperator);
+		return JSON.stringify(type.value,null,seperator);
 	}else if (portinfo.type.class == "Typelib::opaque"){
-		return JSON.stringify(type.sample,null,seperator);
+		return JSON.stringify(type.value,null,seperator);
 	}
 	
 	return "";
