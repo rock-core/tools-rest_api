@@ -1,0 +1,18 @@
+= rock-webapp
+
+== DESCRIPTION:
+
+A REST API and in-browser UI to interface with a Rock system
+
+== FEATURES/PROBLEMS:
+
+== SYNOPSIS:
+
+Just run
+
+```
+rock-webapp
+```
+
+The REST API is under /api/ and the UI under /ui/
+

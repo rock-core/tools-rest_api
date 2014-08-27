@@ -1,0 +1,22 @@
+<package>
+  <description brief="A REST API and in-browser UI to interface with a Rock system">
+  </description>
+  <author>Sylvain Joyeux/sylvain.joyeux@centro-inovacao-robotica.com.br</author>
+  <author>Steffen Planthaber/steffen.planthaber@dfki.de</author>
+  <license>LGPLv2 or later</license>
+
+  <depend package="hoe" />
+  <depend package="hoe-yard" />
+  <depend package="utilrb" />
+
+  <!--   webserver for bin/rock-webapp -->
+  <depend package="thin" optional="1"/>
+  <depend package="rack" optional="1"/>
+  <!--   libraries for the library implementation itself -->
+  <depend package="grape" optional="1"/>
+  <depend package="multi_json" optional="1"/>
+  <depend package="faye-websocket" optional="1"/>
+  <!-- gems required for testing. They are commented out as we don't want
+         everyone to install them -->
+  <!-- gem install rack-test flexmock minitest-em-sync -->
+</package>
