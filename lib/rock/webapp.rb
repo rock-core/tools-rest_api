@@ -14,6 +14,9 @@ require 'rock/webapp/tasks'
 require 'utilrb/logger'
 module Rock
     module WebApp
+        LIB_DIR = File.expand_path(File.dirname(__FILE__))
+        UI_DIR  = File.join(LIB_DIR, 'webapp', 'ui')
+
         extend Logger::Root('Rock::WebApp', Logger::WARN)
 
         # Root for a REST API that allows to access a running Rock system

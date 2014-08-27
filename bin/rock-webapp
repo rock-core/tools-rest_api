@@ -5,6 +5,7 @@ require 'rack'
 require 'thin'
 require 'orocos'
 require 'rock/webapp'
+require 'rack/static'
 
 thin_host = '0.0.0.0'
 thin_port = 9292
@@ -27,24 +28,29 @@ options = OptionParser.new do |opt|
 end
 options.parse ARGV
 
-class WebApp < Grape::API
-end
-if !cors_hosts.empty?
-    require 'rack/cors'
-    WebApp.use Rack::Cors do                                                                     
-        allow do
-            origins(*cors_hosts)
-            resource '*', headers: :any, methods: [:get, :post]
-        end                                                                               
-    end  
-end
-
 Orocos::CORBA.name_service.ip = name_server_host
 Orocos.initialize
 
 Faye::WebSocket.load_adapter('thin')
 thin = Rack::Handler.get('thin')
-WebApp.mount Rock::WebApp::Root
 EM.next_tick { Rock::WebApp.install_event_loop }
-thin.run(WebApp.new, Host: thin_host, Port: thin_port)
+
+app = Rack::Builder.new do
+    map '/ui' do
+        run Rack::File.new(Rock::WebApp::UI_DIR)
+    end
+    map '/api' do
+        if !cors_hosts.empty?
+            require 'rack/cors'
+            use Rack::Cors do
+                allow do
+                    origins(*cors_hosts)
+                    resource '*', headers: :any, methods: [:get, :post]
+                end
+            end
+        end
+        run Rock::WebApp::Root
+    end
+end
+thin.run(app, Host: thin_host, Port: thin_port)
 
