@@ -129,7 +129,7 @@ describe Rock::WebApp::Tasks do
                                 :resolve_connection_from => true, :port= => nil, :policy= => nil))
                         get "/tasks/localhost/task/ports/port/read?timeout=0.05"
                         assert_equal 200, last_response.status
-                        assert_equal [Hash[sample: 10]], MultiJson.load(last_response.body, symbolize_keys: true)
+                        assert_equal [Hash[value: 10]], MultiJson.load(last_response.body, symbolize_keys: true)
                     end
                 end
 
@@ -165,6 +165,59 @@ describe Rock::WebApp::Tasks do
                             assert_equal 0, MultiJson.load(sync(d))
                         end
                     end
+                end
+            end
+        end
+        describe "/write" do
+
+            it "returns a code 415 'Unsupported Media Type' if the JSON string cannot be parsed" do
+                with_stub_task_context "task" do |task|
+                    port = task.create_input_port 'port', '/double'
+                    post "/tasks/localhost/task/ports/port/write" , value: "{\"text\"=10"
+                    assert_equal 415, last_response.status
+                end
+            end
+            
+            it "returns a code 415 'Unsupported Media Type' if the JSON string cannot be parsed" do
+                with_stub_task_context "task" do |task|
+                    port = task.create_input_port 'port', '/double'
+                    post "/tasks/localhost/task/ports/port/write" , value: "{\"text\",10}"
+                    assert_equal 415, last_response.status
+                end
+            end
+
+            it "returns a code 406 'Not Acceptable' if the data type is wrong" do
+                with_stub_task_context "task" do |task|
+                    port = task.create_input_port 'port', '/double'
+                    post "/tasks/localhost/task/ports/port/write" , value: "\"string\""
+                    assert_equal 406, last_response.status
+                end
+            end
+                        
+            it "returns a code 406 'Not Acceptable' if the type contents are wrong" do
+                with_stub_task_context "task" do |task|
+                    port = task.create_input_port 'port', '/double'
+                    post "/tasks/localhost/task/ports/port/write" , value: "{\"text\":10}"
+                    assert_equal 406, last_response.status
+                end
+            end
+                        
+            it "returns a code 403 'Forbidden' if the port type is wrong" do
+                with_stub_task_context "task" do |task|
+                    port = task.create_output_port 'port', '/double'
+                    post "/tasks/localhost/task/ports/port/write" , value: "10.0"
+                    assert_equal 403, last_response.status
+                end
+            end
+    
+            it "returns a code 201 'Created' when the port was written correctly" do
+                (0..20000).each do
+                with_stub_task_context "task" do |task|
+                    port = task.create_input_port 'port', '/double'
+                    post "/tasks/localhost/task/ports/port/write", value: "10.0"
+                    assert_equal 201, last_response.status
+                    assert_equal 10.0, port.read
+                end
                 end
             end
         end
