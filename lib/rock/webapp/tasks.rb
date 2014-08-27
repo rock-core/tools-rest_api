@@ -85,6 +85,10 @@ module Rock
                 get ':name_service/:name/ports/:port_name/read' do
                     port = port_by_task_and_name(*params.values_at('name_service', 'name', 'port_name'))
 
+                    if !port.respond_to?(:reader)
+                        error! "#{port.name} is an input port, cannot read"
+                    end
+                    
                     if Faye::WebSocket.websocket?(env)
                         port = port.to_async.reader(init: true, pull: true)
                         count = params.fetch(:count, Float::INFINITY)
