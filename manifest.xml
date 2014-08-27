@@ -1,0 +1,21 @@
+<package>
+  <description brief="A REST API and in-browser UI to interface with a Rock system">
+  
+  </description>
+  <author>Sylvain Joyeux/sylvain.joyeux@centro-inovacao-robotica.com.br</author>
+  <license></license>
+  <url>http://</url>
+  <logo>http://</logo>
+
+  <depend package="hoe" />
+  <depend package="hoe-yard" />
+  <depend package="rake-compiler" />
+  <depend package="utilrb" />
+  <!--
+   To add any dependencies use the depend tag
+  <depend package="dummy-dependency-0" />
+	...
+  <depend package="dummy-dependency-n-1" />
+  <depend package="dummy-dependency-n" />
+  -->
+</package>
