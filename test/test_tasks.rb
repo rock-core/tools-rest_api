@@ -18,7 +18,7 @@ describe Rock::WebApp::Tasks do
     end
 
     def app
-        @app ||= Orocos::WebApp::Root.new
+        @app ||= Rock::WebApp::Root.new
     end
 
     def with_stub_task_context(task_name)
