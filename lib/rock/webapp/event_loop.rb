@@ -1,4 +1,4 @@
-module Orocos
+module Rock
     module WebApp
         def self.install_event_loop(period = 0.1)
             @async_event_loop_timer ||=

@@ -2,11 +2,11 @@ require 'minitest/spec'
 require 'rack/test'
 require 'orocos'
 require 'orocos/test'
-require 'orocos/webapp'
+require 'rock/webapp'
 require 'rack'
 require 'minitest/em_sync'
 
-describe Orocos::WebApp::Tasks do
+describe Rock::WebApp::Tasks do
     include Orocos::Spec
     include Rack::Test::Methods
 

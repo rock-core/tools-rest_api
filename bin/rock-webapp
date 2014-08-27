@@ -4,7 +4,7 @@ require 'eventmachine'
 require 'rack'
 require 'thin'
 require 'orocos'
-require 'orocos/webapp'
+require 'rock/webapp'
 
 thin_host = '0.0.0.0'
 thin_port = 9292
@@ -33,7 +33,7 @@ if !cors_hosts.empty?
     require 'rack/cors'
     WebApp.use Rack::Cors do                                                                     
         allow do
-            origins *cors_hosts
+            origins(*cors_hosts)
             resource '*', headers: :any, methods: [:get, :post]
         end                                                                               
     end  
@@ -44,7 +44,7 @@ Orocos.initialize
 
 Faye::WebSocket.load_adapter('thin')
 thin = Rack::Handler.get('thin')
-WebApp.mount Orocos::WebApp::Root
-EM.next_tick { Orocos::WebApp.install_event_loop }
+WebApp.mount Rock::WebApp::Root
+EM.next_tick { Rock::WebApp.install_event_loop }
 thin.run(WebApp.new, Host: thin_host, Port: thin_port)
 
