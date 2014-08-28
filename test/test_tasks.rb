@@ -211,16 +211,38 @@ describe Rock::WebApp::Tasks do
             end
     
             it "returns a code 201 'Created' when the port was written correctly" do
-                (0..20000).each do
                 with_stub_task_context "task" do |task|
                     port = task.create_input_port 'port', '/double'
                     post "/tasks/localhost/task/ports/port/write", value: "10.0"
                     assert_equal 201, last_response.status
                     assert_equal 10.0, port.read
                 end
+            end
+        end
+        
+        describe "/GCwrite" do
+            it "does also work if the GC runs" do
+                gcruns = 0
+                Thread.new do
+                    loop do
+                        #sleep 0.01
+                        GC.start
+                        gcruns += 1
+                    end
+                end
+                (0..1000).each do |run| 
+                    with_stub_task_context "task" do |task|
+                        port = task.create_input_port 'port', '/double'
+                        post "/tasks/localhost/task/ports/port/write", value: "10.0"
+                        assert_equal 201, last_response.status
+                        assert_equal 10.0, port.read
+                    end
+                    p "run #{run} with #{gcruns} GC runs"
+                    gcruns = 0
                 end
             end
         end
+        
     end
 end
 
