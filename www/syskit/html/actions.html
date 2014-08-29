@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>TaskManager</title>
+
+<!-- theme -->
+<!-- download css themes on http://jqueryui.com/themeroller/ -->
+<!-- <link rel="stylesheet" type="text/css" href="../../common/css/jQueryUI/smoothness/jquery-ui.css"> -->
+<link rel="stylesheet" type="text/css" href="../../common/css/jQueryUI/sunny/jquery-ui.css">
+
+<!-- GUI scripts and styles -->
+<link rel="stylesheet" href="../../common/css/gui.css">
+<!-- <script src="../../common/libs/gui/Collapsable.js"></script> -->
+
+<!-- external libs -->
+<script src="../../common/libs/external/jquery-2.1.1.js"></script>
+<script src="../../common/libs/external/jquery-ui.js"></script>
+
+
+<!-- own libs and styles -->
+
+
+<script src="../../common/libs/api/JSON.js"></script>
+
+
+<!-- ui elements -->
+<script src="../libs/gui/actions.js"></script>
+
+
+<script>
+function init(){
+	var hostname = "localhost";
+	if (window.location.hostname != ""){
+		hostname = window.location.hostname;
+	} 
+    var api_base = "http://" + hostname + ":9292/api/syskit";
+	
+    actions(api_base+"/actions","actions");
+	
+}
+</script>
+
+</head>
+<body onload="init()">
+
+<div id=actions></div>
+
+</body>
+</html>
+
+
+
+
+

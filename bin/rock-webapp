@@ -4,13 +4,14 @@ require 'eventmachine'
 require 'rack'
 require 'thin'
 require 'orocos'
-require 'rock/webapp'
 require 'rack/static'
+require 'rock/webapp/tasks/tasks'
 
 thin_host = '0.0.0.0'
 thin_port = 9292
 name_server_host = 'localhost'
 cors_hosts = []
+syskit = false
 
 options = OptionParser.new do |opt|
     opt.on('--host host', String, 'the host of the name server that should be contacted (default to localhost)') do |host|
@@ -25,26 +26,59 @@ options = OptionParser.new do |opt|
     opt.on('--enable-cors hosts', Array, "enables Cross-Origin Resource Sharing for sites loaded from the parameter may include localhost host:port, file://. Also multiple values seperated by ','") do |host|
         cors_hosts = host
     end
+    opt.on('--enable-syskit',"load syskit support") do
+        syskit=true
+    end
 end
 options.parse ARGV
+
+
+Faye::WebSocket.load_adapter('thin')
+thin = Rack::Handler.get('thin')
+EM.next_tick { Rock::WebApp::Tasks.install_event_loop }
+
+if syskit
+    #included roby app changes a log path, must be included before Orocos.initialize
+    require 'rock/webapp/syskit/syskit'
+    EM.next_tick { Rock::WebApp::Syskit.install_event_loop }
+end
 
 Orocos::CORBA.name_service.ip = name_server_host
 Orocos.initialize
 
-Faye::WebSocket.load_adapter('thin')
-thin = Rack::Handler.get('thin')
-EM.next_tick { Rock::WebApp.install_event_loop }
-
+        
+APP_DIR = File.expand_path(File.dirname(__FILE__))
+UI_DIR = File.join(APP_DIR, '..','www')
+    
 app = Rack::Builder.new do
-    map '/ui' do
-        run Rack::Directory.new(Rock::WebApp::UI_DIR)
+    
+    #map html uis
+    
+    #map welcome page
+    map '/' do
+        run Rack::File.new(File.join(UI_DIR, 'index.html'))
     end
+    
+    map '/html' do
+        run Rack::Directory.new(File.join(UI_DIR, 'html'))
+    end
+    
+    #map all uis
+    map '/ui' do
+        run Rack::Directory.new(UI_DIR)
+    end
+    
+    #mal additional custom uis
     if defined? Rock::WebApp::UI_CUSTOM_DIR
-        map '/ui/custom' do
-            run Rack::Directory.new(Rock::WebApp::UI_CUSTOM_DIR)
+        map '/ui/tasks/custom' do
+            run Rack::Directory.new(Rock::WebApp::Tasks::UI_CUSTOM_DIR)
         end
     end
-    map '/api' do
+    
+    
+    #map the apis
+    
+    map '/api/tasks' do
         if !cors_hosts.empty?
             require 'rack/cors'
             use Rack::Cors do
@@ -54,7 +88,22 @@ app = Rack::Builder.new do
                 end
             end
         end
-        run Rock::WebApp::Root
+        run Rock::WebApp::Tasks::Root
+    end
+    
+    if syskit      
+        map '/api/syskit' do
+            if !cors_hosts.empty?
+                require 'rack/cors'
+                use Rack::Cors do
+                    allow do
+                        origins(*cors_hosts)
+                        resource '*', headers: :any, methods: [:get, :post]
+                    end
+                end
+            end
+            run Rock::WebApp::Syskit::Root
+        end
     end
 end
 thin.run(app, Host: thin_host, Port: thin_port)
