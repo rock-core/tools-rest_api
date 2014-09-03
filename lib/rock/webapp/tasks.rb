@@ -11,7 +11,7 @@ module Rock
                 ws = Faye::WebSocket.new(env)
 
                 listener = data_source.on_raw_data do |sample|
-                    if !ws.send(MultiJson.dump(sample.to_json_value(:special_float_values => :string)))
+                    if !ws.send(MultiJson.dump(Hash[:value => sample.to_json_value(:special_float_values => :string)]))
                         WebApp.warn "failed to send, closing connection"
                         ws.close
                         listener.stop
