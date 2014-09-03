@@ -40,10 +40,10 @@ app = Rack::Builder.new do
         run Rack::File.new(Rock::WebApp::UI_DIR)
     end
     if defined? Rock::WebApp::UI_CUSTOM_DIR
-	    map '/ui/custom' do
-	        run Rack::File.new(Rock::WebApp::UI_CUSTOM_DIR)
-	    end
-	end
+        map '/ui/custom' do
+            run Rack::File.new(Rock::WebApp::UI_CUSTOM_DIR)
+        end
+    end
     map '/api' do
         if !cors_hosts.empty?
             require 'rack/cors'
