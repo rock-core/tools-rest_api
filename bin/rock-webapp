@@ -37,7 +37,12 @@ EM.next_tick { Rock::WebApp.install_event_loop }
 
 app = Rack::Builder.new do
     map '/ui' do
-        run Rack::File.new(Rock::WebApp::UI_DIR)
+        run Rack::Directory.new(Rock::WebApp::UI_DIR)
+    end
+    if defined? Rock::WebApp::UI_CUSTOM_DIR
+        map '/ui/custom' do
+            run Rack::Directory.new(Rock::WebApp::UI_CUSTOM_DIR)
+        end
     end
     map '/api' do
         if !cors_hosts.empty?
