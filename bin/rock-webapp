@@ -6,6 +6,7 @@ require 'thin'
 require 'orocos'
 require 'rack/static'
 require 'rock/webapp/tasks'
+require 'rock/webapp/ui'
 
 thin_host = '0.0.0.0'
 thin_port = 9292
@@ -46,32 +47,24 @@ end
 Orocos::CORBA.name_service.ip = name_server_host
 Orocos.initialize
 
-        
-APP_DIR = File.expand_path(File.dirname(__FILE__))
-UI_DIR = File.join(APP_DIR, '..','lib','rock','webapp','www')
-    
 app = Rack::Builder.new do
     
     #map html uis
     
     #map welcome page
     map '/' do
-        run Rack::File.new(File.join(UI_DIR, 'index.html'))
-    end
-    
-    map '/html' do
-        run Rack::Directory.new(File.join(UI_DIR, 'html'))
+        run Rack::File.new(File.join(Rock::WebApp::UI::DIR, 'index.html'))
     end
     
     #map all uis
     map '/ui' do
-        run Rack::Directory.new(UI_DIR)
+        run Rack::Directory.new(Rock::WebApp::UI::DIR)
     end
     
-    #mal additional custom uis
-    if defined? Rock::WebApp::UI_CUSTOM_DIR
-        map '/ui/tasks/custom' do
-            run Rack::Directory.new(Rock::WebApp::Tasks::UI_CUSTOM_DIR)
+    #map additional custom uis
+    if defined? Rock::WebApp::UI::ADDON_DIR
+        map '/ui/addon' do
+            run Rack::Directory.new(Rock::WebApp::UI::ADDON_DIR)
         end
     end
     

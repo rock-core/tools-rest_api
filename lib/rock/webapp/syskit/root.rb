@@ -15,10 +15,7 @@ require 'rock/webapp/syskit/api'
 
 module Rock
     module WebApp
-        module Syskit
-            LIB_DIR = File.expand_path(File.dirname(__FILE__))
-            UI_DIR = File.join(LIB_DIR, 'ui')
-    
+        module Syskit   
             # Root for a REST API that allows to access a running Rock system
             class Root < Grape::API
                 version 'v1'
