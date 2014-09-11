@@ -5,7 +5,7 @@ require 'grape'
 require 'multi_json'
 require 'faye/websocket'
 
-require 'rock/webapp/tasks/tasks_api'
+require 'rock/webapp/tasks/api'
 
 # The toplevel namespace for webapp
 #

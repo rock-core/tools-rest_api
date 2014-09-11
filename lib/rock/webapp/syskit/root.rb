@@ -5,7 +5,7 @@ require 'grape'
 require 'multi_json'
 require 'faye/websocket'
 
-require 'rock/webapp/syskit/shell_client'
+require 'rock/webapp/syskit/api'
 
 
 # The toplevel namespace for webapp
@@ -23,7 +23,7 @@ module Rock
             class Root < Grape::API
                 version 'v1'
     
-                mount Shell
+                mount API
             end
         end
     end
