@@ -48,7 +48,7 @@ Orocos.initialize
 
         
 APP_DIR = File.expand_path(File.dirname(__FILE__))
-UI_DIR = File.join(APP_DIR, '..','www')
+UI_DIR = File.join(APP_DIR, '..','lib','rock','webapp','www')
     
 app = Rack::Builder.new do
     
