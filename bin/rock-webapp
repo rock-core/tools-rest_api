@@ -5,8 +5,8 @@ require 'rack'
 require 'thin'
 require 'orocos'
 require 'rack/static'
-require 'rock/webapp/tasks/root'
-require 'rock/webapp/ui/root'
+require 'rock/webapp/tasks'
+require 'rock/webapp/ui'
 
 thin_host = '0.0.0.0'
 thin_port = 9292
@@ -40,7 +40,7 @@ EM.next_tick { Rock::WebApp::Tasks.install_event_loop }
 
 if syskit
     #included roby app changes a log path, must be included before Orocos.initialize
-    require 'rock/webapp/syskit/root'
+    require 'rock/webapp/syskit'
     EM.next_tick { Rock::WebApp::Syskit.install_event_loop }
 end
 
