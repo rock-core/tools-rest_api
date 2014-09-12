@@ -1,13 +1,12 @@
 module Rock
     module WebApp
         module Tasks
-            
             class PortWriters
                 
                 def initialize
                     @writers = {} 
                 end
-                        
+                                        
                 class PortWriterEntry
                                 
                     def initialize(port, lifetime_seconds)
@@ -36,38 +35,49 @@ module Rock
                         end
                     end
                     
-                    def expired?
-                        #puts "unused #{(Time.now().to_i - @timestamp)}"
-                        (Time.now().to_i - @timestamp) > @lifetime_s
+                    def lifetime_left
+                        @lifetime_s - (Time.now().to_i - @timestamp)  
                     end
                     
                 end
-            
+                            
                 def add(port, name_service, name, port_name, lifetime_seconds)
                     #puts "added writer with #{lifetime_seconds} timeout"
                     entry = PortWriterEntry.new(port, lifetime_seconds)
-                    @writers[name_service+name+port_name] = entry
+                    key = name_service+name+port_name;
+                    @writers[key] = entry
                     #puts "add writer size: #{@writers.length}"
+                    create_timed_delete(lifetime_seconds, key)
                     entry
                 end
                 
                 def get(name_service, name, port_name )
-                    writer = @writers[name_service+name+port_name]
+                    key = name_service+name+port_name
+                    writer = @writers[key]
                     if writer && writer.connected?
                         return writer 
                     end
+                    @writers.delete(key)
                     nil
                 end
-                
-                #cleans the references to the writer objects
-                def clean
-                    #puts "before clean writer size: #{@writers.length}"
-                    @writers.delete_if do |key,elem|
-                        elem.expired?
+        
+                def create_timed_delete(lifetime_seconds, key)
+                    EM.add_timer(lifetime_seconds) do
+                        writer = @writers[key]
+                        if writer #the wruiter moght have benn already deleted because it was disconnected
+                            time_left = writer.lifetime_left
+                            if time_left > 0
+                                #puts "object has #{time_left} seconds left"
+                                create_timed_delete(time_left, key)
+                            else
+                                #puts "deleting writer"
+                                @writers.delete(key)
+                            end
+                        end
                     end
-                    #puts "after clean writer size: #{@writers.length}"
-                end
-            end 
+                end 
+                
+            end
         end
     end
 end
