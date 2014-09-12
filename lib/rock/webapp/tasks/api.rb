@@ -8,6 +8,14 @@ module Rock
                 version 'v1', using: :header, vendor: :rock
                 format :json
     
+                
+                @port_writers = PortWriters.new
+                
+                def self.port_writers
+                    @port_writers
+                end
+                
+                
                 def self.stream_async_data_to_websocket(env, data_source, count = Float::INFINITY)
                     emitted_samples = 0
     
@@ -141,13 +149,13 @@ module Rock
                     end
                     post ':name_service/:name/ports/:port_name/write' do
                         
-                        writer = Tasks.port_writers.get(*params.values_at('name_service', 'name', 'port_name'))
+                        writer = API.port_writers.get(*params.values_at('name_service', 'name', 'port_name'))
                         if !writer
                             port = port_by_task_and_name(*params.values_at('name_service', 'name', 'port_name'))
                             if !port.respond_to?(:writer)
                                     error! "#{port.name} is an output port, cannot write" , 403
                             end 
-                            writer = Tasks.port_writers.add(port, *params.values_at('name_service', 'name', 'port_name'),params[:timeout])
+                            writer = API.port_writers.add(port, *params.values_at('name_service', 'name', 'port_name'),params[:timeout])
                         end
     
                         begin
