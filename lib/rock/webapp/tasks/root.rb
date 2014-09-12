@@ -6,6 +6,7 @@ require 'multi_json'
 require 'faye/websocket'
 
 require 'rock/webapp/tasks/api'
+require 'rock/webapp/tasks/event_loop'
 
 # The toplevel namespace for webapp
 #

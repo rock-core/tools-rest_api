@@ -6,7 +6,7 @@ require 'multi_json'
 require 'faye/websocket'
 
 require 'rock/webapp/syskit/api'
-
+require 'rock/webapp/syskit/event_loop'
 
 # The toplevel namespace for webapp
 #
