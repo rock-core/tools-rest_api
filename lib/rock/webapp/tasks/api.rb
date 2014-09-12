@@ -74,6 +74,22 @@ module Rock
                         Hash[ports: ports.map(&:to_h)]
                     end
     
+                    desc "returns information about the properties of a given task"
+                    get ':name_service/:name/properties' do
+                        taskhash = Hash[task_by_name(params[:name_service], params[:name]).to_h]
+                        model = taskhash[:model]
+                        Hash[properties: model[:properties]]
+                    end
+                                    
+                    desc "returns information about the seleted property"
+                    get ':name_service/:name/properties/:property_name/read' do
+                        task = task_by_name(params[:name_service], params[:name])
+                        prop = task.property(params[:property_name])
+                        puts prop.raw_read_new.pretty_inspect
+                        #puts prop.to_h
+                        Hash[value: prop.raw_read.to_json_value(:special_float_values => :string)]
+                    end
+                    
                     desc "returns information about the given port"
                     get ':name_service/:name/ports/:port_name' do
                         port = port_by_task_and_name(*params.values_at('name_service', 'name', 'port_name'))
