@@ -25,9 +25,11 @@ module Rock
                         interface.get_actions
                     end
                     
-                    get ':action/start' do
-                        puts "start #{params.values_at('action')}" 
-                        interface.start_action(params[:action],*params)
+                    post ':action/start' do
+                        puts "start #{params.values_at('action')}"
+                        puts request.params.pretty_inspect
+                        mparams = MultiJson.load(request.params["value"])
+                        interface.start_action(params[:action],mparams)
                     end
                         
                      
@@ -46,7 +48,17 @@ module Rock
                     get do
                         interface.get_messages
                     end 
-                end             
+                end
+                
+                resource :reload_actions do
+                    
+                    desc "Lists all tasks that are currently reachable on the name services"
+                    get do
+                        interface.reload_actions
+                    end 
+                end
+                
+                             
             end    
         end 
     end
