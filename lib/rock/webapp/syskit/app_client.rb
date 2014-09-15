@@ -65,9 +65,9 @@ module Roby
                             optional_arguments = []
                             arguments.each do |argument|
                                 if argument.required
-                                    required_arguments << {name: argument.name, default: argument.default, doc: argument.doc}
+                                    required_arguments << Hash[name: argument.name, default: argument.default, doc: argument.doc]
                                 else
-                                    optional_arguments << {name: argument.name, default: argument.default, doc: argument.doc}
+                                    optional_arguments << Hash[name: argument.name, default: argument.default, doc: argument.doc]
                                 end
                             end
                         actionhash = Hash[required_arguments: required_arguments, optional_arguments: optional_arguments, doc: action.doc]
