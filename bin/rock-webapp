@@ -39,9 +39,8 @@ thin = Rack::Handler.get('thin')
 EM.next_tick { Rock::WebApp::Tasks.install_event_loop }
 
 if syskit
-    #included roby app changes a log path, must be included before Orocos.initialize
+    #includes roby app that changes a log path, must be included before Orocos.initialize
     require 'rock/webapp/syskit'
-    EM.next_tick { Rock::WebApp::Syskit.install_event_loop }
 end
 
 Orocos::CORBA.name_service.ip = name_server_host
