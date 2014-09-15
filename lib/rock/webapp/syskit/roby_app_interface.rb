@@ -66,6 +66,11 @@ module Rock
                     msgs
                 end
                 
+                def reload_actions
+                    #@appclient.reload_actions
+                    start_action("reload_actions",*[])
+                end
+                
                 def start_action(m, *args)
                     puts "m"
                     puts m
@@ -73,7 +78,7 @@ module Rock
                     puts args.pretty_inspect
                     path = []
                     margs = []
-                    @appclient.call(Hash[:retry => true], path, m, *margs)
+                    @appclient.call(Hash[:retry => true], path, m, *args)
                 end
             end
             
