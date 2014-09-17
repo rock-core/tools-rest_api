@@ -42,7 +42,7 @@ module Rock
     
                     ws
                 end
-    
+                
                 resource :tasks do
                     desc "Lists all tasks that are currently reachable on the name services"
                     params do
@@ -68,6 +68,19 @@ module Rock
                         rescue Orocos::NotFound
                             error! "cannot find port #{port_name} on task #{name_service}/#{name}", 404
                         end
+                        
+                        def get_port_writer(name_service, name, port_name, timeout)
+                            writer = API.port_writers.get(name_service, name, port_name)
+                            if !writer
+                                port = port_by_task_and_name(name_service, name, port_name)
+                                if !port.respond_to?(:writer)
+                                        error! "#{port.name} is an output port, cannot write" , 403
+                                end 
+                                writer = API.port_writers.add(port, name_service, name, port_name,timeout)
+                            end
+                            writer
+                        end
+                        
                     end
     
                     desc "Lists information about a given task"
@@ -127,20 +140,14 @@ module Rock
                         end
                     end
                     
+                                       
                     desc "write a value to a port"
                     params do
                         optional :timeout, type: Integer, default: 30
                     end
                     post ':name_service/:name/ports/:port_name/write' do
-                        
-                        writer = API.port_writers.get(*params.values_at('name_service', 'name', 'port_name'))
-                        if !writer
-                            port = port_by_task_and_name(*params.values_at('name_service', 'name', 'port_name'))
-                            if !port.respond_to?(:writer)
-                                    error! "#{port.name} is an output port, cannot write" , 403
-                            end 
-                            writer = API.port_writers.add(port, *params.values_at('name_service', 'name', 'port_name'),params[:timeout])
-                        end
+ 
+                        writer = get_port_writer(*params.values_at('name_service', 'name', 'port_name', 'timeout'))
     
                         begin
                             obj = MultiJson.load(request.params["value"])
@@ -155,8 +162,33 @@ module Rock
                         rescue Exception => ex
                             #puts ex
                             error! "unable to write to port #{ex}", 404
-                        end     
+                        end  
                     end
+                    
+                    desc "write a value to a port using a ws"
+                    #ws is using a get request, so we can't combine with the post url
+                    #bit we can use the same, because it starts with ws://
+                    get ':name_service/:name/ports/:port_name/write' do
+                        
+                        if Faye::WebSocket.websocket?(env)
+                            writer = get_port_writer(*params.values_at('name_service', 'name', 'port_name'),0)
+                            ws = Faye::WebSocket.new(env)
+                            ws.on :message do |event|
+                                obj = MultiJson.load(event.data)
+                                writer.write(obj,0)
+                            end
+                            ws.on :close do
+                                API.port_writers.delete(*params.values_at('name_service', 'name', 'port_name')) 
+                            end 
+                            status, response = ws.rack_response
+                            status status
+                            response
+                        end
+                        
+                    end
+                    
+                    
+                       
                 end
             end
         end
