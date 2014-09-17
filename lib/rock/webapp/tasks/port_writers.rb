@@ -8,7 +8,8 @@ module Rock
                 end
                                         
                 class PortWriterEntry
-                                
+                    
+                    #if lifetiem_s ==0, there will be no timeout
                     def initialize(port, lifetime_seconds)
                         @timestamp = Time.now().to_i
                         @lifetime_s = lifetime_seconds
@@ -41,17 +42,19 @@ module Rock
                     
                 end
                             
-                def add(port, name_service, name, port_name, lifetime_seconds)
+                def add(port, name_service, name, port_name, lifetime_seconds = Float::INFINITY)
                     #puts "added writer with #{lifetime_seconds} timeout"
                     entry = PortWriterEntry.new(port, lifetime_seconds)
                     key = name_service+name+port_name;
                     @writers[key] = entry
                     #puts "add writer size: #{@writers.length}"
-                    create_timed_delete(lifetime_seconds, key)
+                    if lifetime_seconds < Float::INFINITY
+                        create_timed_delete(lifetime_seconds, key)
+                    end
                     entry
                 end
                 
-                def get(name_service, name, port_name )
+                def get(name_service, name, port_name)
                     key = name_service+name+port_name
                     writer = @writers[key]
                     if writer && writer.connected?
@@ -76,6 +79,12 @@ module Rock
                         end
                     end
                 end 
+                
+                def delete(name_service, name, port_name)
+                    key = name_service+name+port_name
+                    #puts key + "disconnected, deleting"
+                    @writers.delete(key)
+                end
                 
             end
         end
