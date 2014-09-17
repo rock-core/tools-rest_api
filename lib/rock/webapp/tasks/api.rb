@@ -120,7 +120,7 @@ module Rock
                         if Faye::WebSocket.websocket?(env)
                             port = port.to_async.reader(init: true, pull: true)
                             count = params.fetch(:count, Float::INFINITY)
-                            ws = Tasks.stream_async_data_to_websocket(env, port, count)
+                            ws = API.stream_async_data_to_websocket(env, port, count)
     
                             status, response = ws.rack_response
                             status status
