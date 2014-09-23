@@ -1,4 +1,4 @@
-require 'rock/webapp/tasks/port_writers'
+require 'rock/webapp/tasks/cached_ports'
 
 module Rock
     module WebApp
@@ -9,14 +9,14 @@ module Rock
                 format :json
     
                 
-                @port_writers = PortWriters.new
+                @ports = CachedPorts.new
                 
-                def self.port_writers
-                    @port_writers
+                def self.ports
+                    @ports
                 end
                 
                 
-                def self.stream_async_data_to_websocket(env, data_source, count = Float::INFINITY)
+                def self.stream_async_data_to_websocket(env, data_source, count = Float::INFINITY, binary = false)
                     emitted_samples = 0
     
                     # Asynchronous streaming mode
@@ -69,16 +69,13 @@ module Rock
                             error! "cannot find port #{port_name} on task #{name_service}/#{name}", 404
                         end
                         
-                        def get_port_writer(name_service, name, port_name, timeout)
-                            writer = API.port_writers.get(name_service, name, port_name)
-                            if !writer
+                        def get_port(name_service, name, port_name, timeout)
+                            portentry = API.ports.get(name_service, name, port_name)
+                            if !portentry
                                 port = port_by_task_and_name(name_service, name, port_name)
-                                if !port.respond_to?(:writer)
-                                        error! "#{port.name} is an output port, cannot write" , 403
-                                end 
-                                writer = API.port_writers.add(port, name_service, name, port_name,timeout)
+                                portentry = API.ports.add(port, name_service, name, port_name,timeout)
                             end
-                            writer
+                            portentry
                         end
                         
                     end
@@ -106,16 +103,19 @@ module Rock
                         optional :timeout, type: Float, default: 2.0
                         optional :poll_period, type: Float, default: 0.05
                         optional :count, type: Integer
+                        optional :binary, type: String, default: "false"
                     end
                     get ':name_service/:name/ports/:port_name/read' do
-                        port = port_by_task_and_name(*params.values_at('name_service', 'name', 'port_name'))
+                        
+                        port = get_port(*params.values_at('name_service', 'name', 'port_name', 'timeout'))
+                        #port = port_by_task_and_name(*params.values_at('name_service', 'name', 'port_name'))
     
-                        if !port.respond_to?(:reader)
+                        if !port.is_reader?
                             error! "#{port.name} is an input port, cannot read"
                         end
                         
                         if Faye::WebSocket.websocket?(env)
-                            port = port.to_async.reader(init: true, pull: true)
+                            port = port.port.to_async.reader(init: true, pull: true)
                             count = params.fetch(:count, Float::INFINITY)
                             ws = API.stream_async_data_to_websocket(env, port, count)
     
@@ -125,7 +125,7 @@ module Rock
                             
                         else # Direct polling mode
                             count = params.fetch(:count, 1)
-                            reader = port.reader(init: true, pull: true)
+                            reader = port.reader
                             result = Array.new
                             (params[:timeout] / params[:poll_period]).ceil.times do
                                 while sample = reader.raw_read_new
@@ -147,8 +147,12 @@ module Rock
                     end
                     post ':name_service/:name/ports/:port_name/write' do
  
-                        writer = get_port_writer(*params.values_at('name_service', 'name', 'port_name', 'timeout'))
+                        writer = get_port(*params.values_at('name_service', 'name', 'port_name', 'timeout'))
     
+                        if !writer.is_writer?
+                            error! "#{port.name} is an output port, cannot write" , 403
+                        end 
+                        
                         begin
                             obj = MultiJson.load(request.params["value"])
                         rescue MultiJson::ParseError => exception
@@ -171,14 +175,14 @@ module Rock
                     get ':name_service/:name/ports/:port_name/write' do
                         
                         if Faye::WebSocket.websocket?(env)
-                            writer = get_port_writer(*params.values_at('name_service', 'name', 'port_name'),0)
+                            writer = get_port(*params.values_at('name_service', 'name', 'port_name'),0)
                             ws = Faye::WebSocket.new(env)
                             ws.on :message do |event|
                                 obj = MultiJson.load(event.data)
                                 writer.write(obj,0)
                             end
                             ws.on :close do
-                                API.port_writers.delete(*params.values_at('name_service', 'name', 'port_name')) 
+                                API.ports.delete(*params.values_at('name_service', 'name', 'port_name')) 
                             end 
                             status, response = ws.rack_response
                             status status
@@ -186,9 +190,6 @@ module Rock
                         end
                         
                     end
-                    
-                    
-                       
                 end
             end
         end
