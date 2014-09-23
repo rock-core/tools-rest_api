@@ -23,7 +23,14 @@ module Rock
                     ws = Faye::WebSocket.new(env)
     
                     listener = data_source.on_raw_data do |sample|
-                        if !ws.send(MultiJson.dump(Hash[:value => sample.to_json_value(:special_float_values => :string)]))
+                        result = Array.new
+                        if binary
+                            result << Hash[:mode => :binary, :value => sample.to_json_value(:pack_simple_arrays => true, :special_float_values => :string)]
+                        else
+                            result << Hash[:value => sample.to_json_value(:special_float_values => :string)]    
+                        end
+                        
+                        if !ws.send(MultiJson.dump(result))
                             WebApp.warn "failed to send, closing connection"
                             ws.close
                             listener.stop
@@ -133,7 +140,11 @@ module Rock
                         if Faye::WebSocket.websocket?(env)
                             port = port.port.to_async.reader(init: true, pull: true)
                             count = params.fetch(:count, Float::INFINITY)
-                            ws = API.stream_async_data_to_websocket(env, port, count)
+                            if params[:binary] == "false"
+                                ws = API.stream_async_data_to_websocket(env, port, count)
+                            else
+                                ws = API.stream_async_data_to_websocket(env, port, count, true)
+                            end
     
                             status, response = ws.rack_response
                             status status
@@ -145,7 +156,11 @@ module Rock
                             result = Array.new
                             (params[:timeout] / params[:poll_period]).ceil.times do
                                 while sample = reader.raw_read_new
-                                    result << Hash[:value => sample.to_json_value(:special_float_values => :string)]
+                                    if params[:binary] == "false"
+                                        result << Hash[:value => sample.to_json_value(:special_float_values => :string)]
+                                    else
+                                        result << Hash[:mode => :binary, :value => sample.to_json_value(:pack_simple_arrays => true, :special_float_values => :string)]    
+                                    end
                                     if result.size == count
                                         return result
                                     end
