@@ -58,9 +58,6 @@ module Rock
                     returnedactions = {}
                     actions.each do |action|
                         if regex.match(action.name)
-                            
-                                #puts "\e[1m#{action.name}!\e[0m"
-    
                                 arguments = action.arguments.sort_by {|arg| arg.name }
                                 required_arguments = []
                                 optional_arguments = []
@@ -115,7 +112,6 @@ module Rock
                 end
     
                 def call(options, path, m, *args)
-                    puts "opt"
                     options = Kernel.validate_options options, :retry => false
                     if options[:retry]
                         options = options.merge(:retry => false)
@@ -123,14 +119,8 @@ module Rock
                             return call options, path, m, *args
                         end
                     else
-                        
-                        puts "opt2"
-                        #act = client.find_action_by_name(m.to_s)
-                        #mact = Roby::Actions::Action.new(act, *args)
                         @mutex.synchronize do
-                            puts "call"
                             client.call(path, m, *args)
-                            puts "done"
                         end
                     end
                 end

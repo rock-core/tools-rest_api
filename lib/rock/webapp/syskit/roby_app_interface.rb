@@ -41,7 +41,6 @@ module Rock
                     Thread.new do
                         begin
                             @appclient.notification_loop(0.1) do |id, msg|
-                                puts msg
                                 @messages[id] = msg
                             end
                         rescue Exception => e
@@ -72,12 +71,7 @@ module Rock
                 end
                 
                 def start_action(m, *args)
-                    puts "m"
-                    puts m
-                    puts "args"
-                    puts args.pretty_inspect
                     path = []
-                    margs = []
                     @appclient.call(Hash[:retry => true], path, m, *args)
                 end
             end
