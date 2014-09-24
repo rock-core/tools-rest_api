@@ -33,7 +33,7 @@ module Rock
                     
                     syskit_url =~ /^(.*):(\d+)$/
                     remote_host, remote_port = $1, Integer($2)
-                    @appclient = Roby::Interface::AppClient.new("#{remote_host}:#{remote_port}") do
+                    @appclient = AppClient.new("#{remote_host}:#{remote_port}") do
                         Roby::Interface.connect_with_tcp_to(remote_host, remote_port)
                     end
                     
