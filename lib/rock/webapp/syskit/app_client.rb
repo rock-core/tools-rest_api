@@ -28,7 +28,7 @@ module Rock
                     retry_warning = false
                     begin
                         @client = connection_method.call
-                    rescue Roby::Interface::ConnectionError, ComError => e
+                    rescue Roby::Interface::ConnectionError, Roby::Interface::ComError => e
                         if retry_period
                             if e.kind_of?(Roby::Interface::ComError)
                                 Roby::Interface.warn "failed handshake with #{remote_name}, retrying ..."
@@ -92,7 +92,7 @@ module Rock
     
                 def retry_on_com_error
                     yield
-                rescue ComError
+                rescue Roby::Interface::ComError
                     Roby::Interface.warn "Lost communication with remote, retrying command after reconnection"
                     connect
                     retry
@@ -208,7 +208,7 @@ module Rock
                             end
                         end
                     end
-                rescue ComError
+                rescue Roby::Interface::ComError
                     Roby::Interface.warn "Lost communication with remote, will not retry the command after reconnection"
                     mutex.synchronize do
                         connect
