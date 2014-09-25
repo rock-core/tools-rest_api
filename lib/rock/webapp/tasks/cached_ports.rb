@@ -17,7 +17,7 @@ module Rock
                             @readerwriter = port.writer    
                         end
                         if port.respond_to?(:reader)
-                            @readerwriter = port.reader#(init: true, pull: true)
+                            @readerwriter = port.reader(init: true, pull: true)
                         end
                         @port = port
                     end
