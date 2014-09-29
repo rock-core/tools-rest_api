@@ -23,7 +23,14 @@ module Rock
                     ws = Faye::WebSocket.new(env)
     
                     listener = data_source.on_raw_data do |sample|
-                        if !ws.send(MultiJson.dump(Hash[:value => sample.to_json_value(:special_float_values => :string)]))
+                        result = Array.new
+                        if binary
+                            result << Hash[:mode => :binary, :value => sample.to_json_value(:pack_simple_arrays => true, :special_float_values => :string)]
+                        else
+                            result << Hash[:value => sample.to_json_value(:special_float_values => :string)]    
+                        end
+                        
+                        if !ws.send(MultiJson.dump(result))
                             WebApp.warn "failed to send, closing connection"
                             ws.close
                             listener.stop
@@ -92,6 +99,22 @@ module Rock
                         Hash[ports: ports.map(&:to_h)]
                     end
     
+                    desc "returns information about the properties of a given task"
+                    get ':name_service/:name/properties' do
+                        taskhash = Hash[task_by_name(params[:name_service], params[:name]).to_h]
+                        model = taskhash[:model]
+                        Hash[properties: model[:properties]]
+                    end
+                                    
+                    desc "returns information about the seleted property"
+                    get ':name_service/:name/properties/:property_name/read' do
+                        task = task_by_name(params[:name_service], params[:name])
+                        prop = task.property(params[:property_name])
+                        puts prop.raw_read_new.pretty_inspect
+                        #puts prop.to_h
+                        Hash[value: prop.raw_read.to_json_value(:special_float_values => :string)]
+                    end
+                    
                     desc "returns information about the given port"
                     get ':name_service/:name/ports/:port_name' do
                         port = port_by_task_and_name(*params.values_at('name_service', 'name', 'port_name'))
@@ -104,7 +127,7 @@ module Rock
                         optional :poll_period, type: Float, default: 0.05
                         optional :count, type: Integer
                         optional :binary, type: String, default: "false"
-                        optional :binary, type: String, default: "false"
+                        optional :init, type: String, default: "false"
                     end
                     get ':name_service/:name/ports/:port_name/read' do
                         
@@ -116,9 +139,13 @@ module Rock
                         end
                         
                         if Faye::WebSocket.websocket?(env)
-                            port = port.port.to_async.reader(init: false, pull: true)
+                            port = port.port.to_async.reader(init: true, pull: true)
                             count = params.fetch(:count, Float::INFINITY)
-                            ws = API.stream_async_data_to_websocket(env, port, count)
+                            if params[:binary] == "false"
+                                ws = API.stream_async_data_to_websocket(env, port, count)
+                            else
+                                ws = API.stream_async_data_to_websocket(env, port, count, true)
+                            end
     
                             status, response = ws.rack_response
                             status status
@@ -130,7 +157,11 @@ module Rock
                             result = Array.new
                             (params[:timeout] / params[:poll_period]).ceil.times do
                                 while sample = reader.raw_read_new
-                                    result << Hash[:value => sample.to_json_value(:special_float_values => :string)]
+                                    if params[:binary] == "false"
+                                        result << Hash[:value => sample.to_json_value(:special_float_values => :string)]
+                                    else
+                                        result << Hash[:mode => :binary, :value => sample.to_json_value(:pack_simple_arrays => true, :special_float_values => :string)]    
+                                    end
                                     if result.size == count
                                         return result
                                     end
