@@ -69,11 +69,11 @@ module Rock
                             error! "cannot find port #{port_name} on task #{name_service}/#{name}", 404
                         end
                         
-                        def get_port(name_service, name, port_name, timeout)
+                        def get_port(name_service, name, port_name, init = false, timeout = Float::INFINITY)
                             portentry = API.ports.get(name_service, name, port_name)
                             if !portentry
                                 port = port_by_task_and_name(name_service, name, port_name)
-                                portentry = API.ports.add(port, name_service, name, port_name,timeout)
+                                portentry = API.ports.add(port, name_service, name, port_name, init, timeout)
                             end
                             portentry
                         end
@@ -104,10 +104,11 @@ module Rock
                         optional :poll_period, type: Float, default: 0.05
                         optional :count, type: Integer
                         optional :binary, type: String, default: "false"
+                        optional :binary, type: String, default: "false"
                     end
                     get ':name_service/:name/ports/:port_name/read' do
                         
-                        port = get_port(*params.values_at('name_service', 'name', 'port_name', 'timeout'))
+                        port = get_port(*params.values_at('name_service', 'name', 'port_name', 'init', 'timeout'))
                         #port = port_by_task_and_name(*params.values_at('name_service', 'name', 'port_name'))
     
                         if !port.is_reader?
@@ -115,7 +116,7 @@ module Rock
                         end
                         
                         if Faye::WebSocket.websocket?(env)
-                            port = port.port.to_async.reader(init: true, pull: true)
+                            port = port.port.to_async.reader(init: false, pull: true)
                             count = params.fetch(:count, Float::INFINITY)
                             ws = API.stream_async_data_to_websocket(env, port, count)
     

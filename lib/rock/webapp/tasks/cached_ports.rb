@@ -10,14 +10,14 @@ module Rock
                 class PortEntry
                     
                     #if lifetiem_s ==0, there will be no timeout
-                    def initialize(port, lifetime_seconds)
+                    def initialize(port, lifetime_seconds, init=false)
                         @timestamp = Time.now().to_i
                         @lifetime_s = lifetime_seconds
                         if port.respond_to?(:writer)
-                            @readerwriter = port.writer    
+                            @readerwriter = port.writer
                         end
                         if port.respond_to?(:reader)
-                            @readerwriter = port.reader(init: true, pull: true)
+                            @readerwriter = port.reader(init: init, pull: true)
                         end
                         @port = port
                     end
@@ -81,9 +81,9 @@ module Rock
                     
                 end
                             
-                def add(port, name_service, name, port_name, lifetime_seconds = Float::INFINITY)
+                def add(port, name_service, name, port_name, init = false, lifetime_seconds = Float::INFINITY)
                     #puts "added writer with #{lifetime_seconds} timeout"
-                    entry = PortEntry.new(port, lifetime_seconds)
+                    entry = PortEntry.new(port, lifetime_seconds, init)
                     key = name_service+name+port_name;
                     @portentries[key] = entry
                     #puts "add writer size: #{@writers.length}"
