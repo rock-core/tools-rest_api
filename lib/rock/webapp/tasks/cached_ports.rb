@@ -14,10 +14,10 @@ module Rock
                         @timestamp = Time.now().to_i
                         @lifetime_s = lifetime_seconds
                         if port.respond_to?(:writer)
-                            @readerwriter = port.writer    
+                            @writer = port.writer
                         end
                         if port.respond_to?(:reader)
-                            @readerwriter = port.reader(init: true, pull: true)
+                            @reader = port.reader(init: init, pull: true)
                         end
                         @port = port
                     end
@@ -35,11 +35,11 @@ module Rock
                     end
                     
                     def reader
-                        @readerwriter
+                        @reader
                     end
                     
                     def writer
-                        @readerwriter
+                        @writer
                     end
                     
                     def port
@@ -52,7 +52,7 @@ module Rock
                                 @lifetime_s = timeout
                             end
                             @timestamp = Time.now().to_i
-                            @readerwriter.write(obj)
+                            @writer.write(obj)
                         end
                     end
                     
@@ -62,12 +62,16 @@ module Rock
                                 @lifetime_s = timeout
                             end
                             @timestamp = Time.now().to_i
-                            @readerwriter.read(obj)
+                            @reader.read(obj)
                         end
                     end
                     
+                    def reader_or_writer
+                        @reader || @writer
+                    end
+                    
                     def connected?
-                        if @readerwriter.connected?
+                        if reader_or_writer.connected?
                             return true
                         else
                             @lifetime_s = 0
