@@ -51,7 +51,7 @@ module Rock
                             if timeout > @lifetime_s
                                 @lifetime_s = timeout
                             end
-                            @timestamp = Time.now().to_i
+                            @timestamp = Time.now
                             @writer.write(obj)
                         end
                     end
@@ -61,7 +61,7 @@ module Rock
                             if timeout > @lifetime_s
                                 @lifetime_s = timeout
                             end
-                            @timestamp = Time.now().to_i
+                            @timestamp = Time.now
                             @reader.read(obj)
                         end
                     end
@@ -80,7 +80,7 @@ module Rock
                     end
                     
                     def lifetime_left
-                        @lifetime_s - (Time.now().to_i - @timestamp)  
+                        @lifetime_s - (Time.now - @timestamp).to_i  
                     end
                     
                 end
