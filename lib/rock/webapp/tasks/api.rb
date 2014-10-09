@@ -188,7 +188,7 @@ module Rock
                         begin
                             obj = MultiJson.load(request.params["value"])
                         rescue MultiJson::ParseError => exception
-                            error! "malformed JSON string", 415
+                            error! "malformed JSON string: #{request.params["value"]}", 415
                         end 
                                              
                         begin
