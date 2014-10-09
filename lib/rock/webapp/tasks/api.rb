@@ -171,6 +171,19 @@ module Rock
                             error! "did not get any sample from #{params[:name]}.#{params[:port_name]} in #{params[:timeout]} seconds", 408
                         end
                     end
+
+                    desc "get a json value, which can be re-written to the port (no need to generate from port info)"
+                    get ':name_service/:name/ports/:port_name/sample' do
+                        
+                        writer = get_port(*params.values_at('name_service', 'name', 'port_name', 'timeout'))
+                            
+                        if !writer.is_writer?
+                            error! "#{port.name} is an output port, cannot create a empty sample, use read instead" , 403
+                        end 
+                        
+                        sample = writer.writer.new_sample            
+                        Hash[:value => sample.to_json_value]
+                    end
                     
                                        
                     desc "write a value to a port"
