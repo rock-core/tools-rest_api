@@ -23,11 +23,11 @@ module Rock
                     ws = Faye::WebSocket.new(env)
     
                     listener = data_source.on_raw_data do |sample|
-                        result = Array.new
+                        result = nil
                         if binary
-                            result << Hash[:mode => :binary, :value => sample.to_json_value(:pack_simple_arrays => true, :special_float_values => :string)]
+                            result = Hash[:mode => :binary, :value => sample.to_json_value(:pack_simple_arrays => true, :special_float_values => :string)]
                         else
-                            result << Hash[:value => sample.to_json_value(:special_float_values => :string)]    
+                            result = Hash[:value => sample.to_json_value(:special_float_values => :string)]    
                         end
                         
                         if !ws.send(MultiJson.dump(result))
