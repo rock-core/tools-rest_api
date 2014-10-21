@@ -74,6 +74,21 @@ module Rock
                     path = []
                     @appclient.call(Hash[:retry => true], path, m, *args)
                 end
+                
+                def killall
+                    @appclient.jobs.each do |job|
+                      if !kill(job[:id])
+                        puts"unable to kill job #{job[:id]}"
+                      end
+                    end
+                end
+                
+                def kill(job_id)
+                  puts "killing #{job_id}"
+                  @appclient.call Hash[:retry => true], [] , :kill_job , job_id
+                end
+    
+                
             end
             
         end
