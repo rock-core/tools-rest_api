@@ -41,6 +41,20 @@ module Rock
                     get do
                         interface.get_jobs
                     end 
+                    
+                    get 'killall' do
+                      puts "killall"
+                        interface.killall
+                    end
+                    
+                    desc "kill a job"
+                    params do
+                       requires :id, type: Integer, desc: "Job id."
+                    end
+                    get 'kill' do
+                      interface.kill(params[:id].to_i)
+                    end
+                    
                 end
                 resource :msg do
                     

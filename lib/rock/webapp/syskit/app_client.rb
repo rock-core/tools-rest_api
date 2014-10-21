@@ -74,18 +74,30 @@ module Rock
                     end
                     returnedactions
                 end
-    
+
+                def format_arguments(hash)
+                    hash.keys.map do |k|
+                        v = hash[k]
+                        v = if !v || v.respond_to?(:to_str) then v.inspect
+                            else v
+                            end
+                        "#{k} => #{v}"
+                    end.join(", ")
+                end
     
                 def jobs
-                    returnedjobs = {}
+                    returnedjobs = Array.new
                     jobs = call Hash[:retry => true], [], :jobs
                     jobs.each do |id, (state, task, planning_task)|
+                        jobhash = nil
                         if planning_task.respond_to?(:action_model) && planning_task.action_model
-                            name = "#{planning_task.action_model.to_s}(#{format_arguments(planning_task.action_arguments)})"
-                        else name = task.to_s
+                          name = "#{planning_task.action_model.to_s}"
+                          jobhash = Hash[name: name, id: id, state: state.to_s, arguments: planning_task.action_arguments]
+                        else
+                          name = task.to_s
+                          jobhash = Hash[name: name, id: id, state: state.to_s, arguments: planning_task.action_arguments]
                         end
-                        jobhash = Hash[id: id, state: state.to_s]
-                        returnedjobs[name] = jobhash
+                        returnedjobs << jobhash
                     end
                     returnedjobs
                 end
@@ -112,6 +124,128 @@ module Rock
                     end
                 end
     
+                def format_notification(source, level, message)
+                    ["[#{level}] #{source}: #{message}"]
+                end
+                
+                def summarize_notification(source, level, message)
+                    return format_notification(source, level, message).first, true
+                end
+                
+                def format_job_progress(kind, job_id, job_name, *args)
+                    ["[#{job_id}] #{job_name}: #{kind}"]
+                end
+                
+                def summarize_job_progress(kind, job_id, job_name, *args)
+                    return format_job_progress(kind, job_id, job_name, *args).first, true
+                end
+                
+                def format_exception(kind, error, *args)
+                    color = if kind == ExecutionEngine::EXCEPTION_FATAL then [:red]
+                            elsif kind == ExecutionEngine::EXCEPTION_NONFATAL then [:magenta]
+                            else []
+                            end
+                    if error
+                        msg = Roby.format_exception(error.exception)
+                        if msg[0]
+                            msg[0] = Roby.console.color(msg[0], *color)
+                        end
+                    else
+                        msg = ["<something wrong happened in transmission of exception information>"]
+                    end
+                    return msg
+                end
+                
+                def summarize_exception(kind, error, *args)
+                    msg = "(#{kind}) #{format_exception(kind, error, *args).first}"
+                    return msg, false
+                end
+                
+                def wtf?
+                    msg = []
+                    @mutex.synchronize do
+                        client.notification_queue.each do |id, level, message|
+                            msg << Roby.console.color("-- ##{id} (notification) --", :bold)
+                            msg.concat format_message(kind, level, message)
+                            msg << "\n"
+                        end
+                        client.job_progress_queue.each do |id, (kind, job_id, job_name, *args)|
+                            msg << Roby.console.color("-- ##{id} (job progress) --", :bold)
+                            msg.concat format_job_progress(kind, job_id, job_name, *args)
+                            msg << "\n"
+                        end
+                        client.exception_queue.each do |id, (kind, exception, tasks)|
+                            msg << Roby.console.color("-- ##{id} (#{kind} exception) --", :bold)
+                            msg.concat format_exception(kind, exception, tasks)
+                            msg << "\n"
+                        end
+                        client.job_progress_queue.clear
+                        client.exception_queue.clear
+                        client.notification_queue.clear
+                    end
+                    puts msg.join("\n")
+                    nil
+                end
+                
+                def method_missing(m, *args, &block)
+                    if sub = client.find_subcommand_by_name(m.to_s)
+                        ShellSubcommand.new(self, m.to_s, sub.description, sub.commands)
+                    elsif act = client.find_action_by_name(m.to_s)
+                        Roby::Actions::Action.new(act, *args)
+                    else
+                        begin
+                            call Hash[], [], m, *args
+                        rescue NoMethodError => e
+                            if e.message =~ /undefined method .#{m}./
+                                puts "invalid command name #{m}, call 'help' for more information"
+                            else raise
+                            end
+                        rescue ArgumentError => e
+                            if e.message =~ /wrong number of arguments/ && e.backtrace.first =~ /#{m.to_s}/
+                                puts e.message
+                            else raise
+                            end
+                        end
+                    end
+                rescue ComError
+                    Roby::Interface.warn "Lost communication with remote, will not retry the command after reconnection"
+                    mutex.synchronize do
+                        connect
+                    end
+                rescue Interrupt
+                    Roby::Interface.warn "Interrupted"
+                end
+                
+                
+                def help(subcommand = client)
+                    puts
+                    if subcommand.respond_to?(:description)
+                        puts Roby.console.color(subcommand.description.join("\n"), :bold)
+                        puts
+                    end
+                
+                    commands = subcommand.commands[''].commands
+                    if !commands.empty?
+                        puts Roby.console.color("Commands", :bold)
+                        puts Roby.console.color("--------", :bold)
+                        commands.keys.sort.each do |command_name|
+                            cmd = commands[command_name]
+                            puts "#{command_name}(#{cmd.arguments.keys.map(&:to_s).join(", ")}): #{cmd.description.first}"
+                        end
+                    end
+                    if subcommand.commands.size > 1
+                        puts if !commands.empty?
+                        puts Roby.console.color("Subcommands (use help <subcommand name> for more details)", :bold)
+                        puts Roby.console.color("-----------", :bold)
+                        subcommand.commands.keys.sort.each do |subcommand_name|
+                            next if subcommand_name.empty?
+                            puts "#{subcommand_name}: #{subcommand.commands[subcommand_name].description.first}"
+                        end
+                    end
+                    nil
+                end
+
+                
                 # Processes the exception and job_progress queues, and yields with a
                 # message that summarizes the new ones
                 #
@@ -141,6 +275,35 @@ module Rock
                     summarized
                 end
     
+                # Processes the exception and job_progress queues, and yields with a
+                # message that summarizes the new ones
+                #
+                # @param [Set] already_summarized the set of IDs of messages that
+                #   have already been summarized. This should be the value returned by
+                #   the last call to {#summarize_pending_messages}
+                # @yieldparam [String] msg the message that summarizes the new
+                #   exception/job progress
+                # @return [Set] the set of notifications still in the queues that
+                #   have already been summarized. Pass to the next call to
+                #   {#summarize_exception}
+                def summarize_pending_messages(already_summarized = Set.new)
+                    summarized = Set.new
+                    queues = {:exception => client.exception_queue,
+                              :job_progress => client.job_progress_queue,
+                              :notification => client.notification_queue}
+                    queues.each do |type, q|
+                        q.delete_if do |id, args|
+                            summarized << id
+                            if !already_summarized.include?(id)
+                                msg, complete = send("summarize_#{type}", *args)
+                                yield "##{id} #{msg}"
+                                complete
+                            end
+                        end
+                    end
+                    summarized
+                end
+                
                 # Polls for messages from the remote interface and yields them. It
                 # handles automatic reconnection, when applicable, as well
                 #
