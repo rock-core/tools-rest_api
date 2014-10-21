@@ -29,9 +29,9 @@ module Rock
                         puts "start #{params.values_at('action')}"
                         puts request.params.pretty_inspect
                         mparams = MultiJson.load(request.params["value"])
+                          puts mparams
                         interface.start_action(params[:action],mparams)
                     end
-                        
                      
                 end
                 
@@ -42,17 +42,20 @@ module Rock
                         interface.get_jobs
                     end 
                     
-                    get 'killall' do
+                    post 'killall' do
                       puts "killall"
                         interface.killall
                     end
                     
                     desc "kill a job"
-                    params do
-                       requires :id, type: Integer, desc: "Job id."
-                    end
-                    get 'kill' do
-                      interface.kill(params[:id].to_i)
+
+                    post 'kill' do
+                      puts "kill"
+                      puts request.params
+                      mparams = MultiJson.load(request.params["value"])
+                      puts mparams.pretty_inspect
+                      puts mparams["id"]
+                      interface.kill(mparams["id"].to_i)
                     end
                     
                 end

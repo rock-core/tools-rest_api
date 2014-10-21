@@ -76,11 +76,16 @@ module Rock
                 end
                 
                 def killall
+                    result = true
                     @appclient.jobs.each do |job|
                       if !kill(job[:id])
                         puts"unable to kill job #{job[:id]}"
+                        result = false
                       end
+                      
                     end
+                    puts "\n"
+                    result
                 end
                 
                 def kill(job_id)
