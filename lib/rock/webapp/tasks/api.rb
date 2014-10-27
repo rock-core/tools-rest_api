@@ -69,8 +69,8 @@ module Rock
                             error! "cannot find port #{port_name} on task #{name_service}/#{name}", 404
                         end
                         
-                        def get_port(name_service, name, port_name, timeout)
-                            portentry = API.ports.get(name_service, name, port_name)
+                        def get_port(name_service, name, port_name, init = false, timeout = 30)
+                            portentry = API.ports.get(name_service, name, port_name, timeout)
                             if !portentry
                                 port = port_by_task_and_name(name_service, name, port_name)
                                 portentry = API.ports.add(port, name_service, name, port_name,timeout)
@@ -175,14 +175,14 @@ module Rock
                     get ':name_service/:name/ports/:port_name/write' do
                         
                         if Faye::WebSocket.websocket?(env)
-                            writer = get_port(*params.values_at('name_service', 'name', 'port_name'),0)
+                            writer = get_port(*params.values_at('name_service', 'name', 'port_name'),false,0)
                             ws = Faye::WebSocket.new(env)
                             ws.on :message do |event|
                                 obj = MultiJson.load(event.data)
                                 writer.write(obj,0)
                             end
                             ws.on :close do
-                                API.ports.delete(*params.values_at('name_service', 'name', 'port_name')) 
+                                API.ports.soft_delete(*params.values_at('name_service', 'name', 'port_name')) 
                             end 
                             status, response = ws.rack_response
                             status status
