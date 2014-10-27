@@ -33,7 +33,7 @@ module Rock
                     
                     syskit_url =~ /^(.*):(\d+)$/
                     remote_host, remote_port = $1, Integer($2)
-                    @appclient = Roby::Interface::AppClient.new("#{remote_host}:#{remote_port}") do
+                    @appclient = AppClient.new("#{remote_host}:#{remote_port}") do
                         Roby::Interface.connect_with_tcp_to(remote_host, remote_port)
                     end
                     
@@ -41,7 +41,6 @@ module Rock
                     Thread.new do
                         begin
                             @appclient.notification_loop(0.1) do |id, msg|
-                                puts msg
                                 @messages[id] = msg
                             end
                         rescue Exception => e
@@ -66,14 +65,14 @@ module Rock
                     msgs
                 end
                 
+                def reload_actions
+                    #@appclient.reload_actions
+                    start_action("reload_actions",*[])
+                end
+                
                 def start_action(m, *args)
-                    puts "m"
-                    puts m
-                    puts "args"
-                    puts args.pretty_inspect
                     path = []
-                    margs = []
-                    @appclient.call(Hash[:retry => true], path, m, *margs)
+                    @appclient.call(Hash[:retry => true], path, m, *args)
                 end
             end
             
