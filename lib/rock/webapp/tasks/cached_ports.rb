@@ -14,7 +14,7 @@ module Rock
                     #if timeout ==0, there will be no timeout
                     def initialize(port, timeout, init=false)
                         
-                        @end_lifetime = Time.at(Time.now.to_i + timeout.to_i)
+                        @end_lifetime = Time.at(Time.now + timeout)
                         
                         #puts "new port will time out at #{@end_lifetime}"
                         
@@ -58,7 +58,7 @@ module Rock
                     
                     def write(obj, timeout)
                         if self.connected?
-                            new_end = Time.at(Time.now.to_i + timeout.to_i)
+                            new_end = Time.at(Time.now + timeout)
                             #puts "old:\t#{@end_lifetime}\nnew:\t#{new_end}"
                             if new_end > @end_lifetime
                                 @end_lifetime = new_end
@@ -70,7 +70,7 @@ module Rock
                     
                     def read(obj, timeout)
                         if self.connected?
-                            new_end = Time.at(Time.now.to_i + timeout.to_i)
+                            new_end = Time.at(Time.now + timeout)
                             if new_end > @end_lifetime
                                 @end_lifetime = new_end
                                 #puts "existing read port will now time out at #{@end_lifetime}"
