@@ -101,61 +101,58 @@ module Rock
                 #timeout == 0 won't start a timer to delete the port
                 def add(port, name_service, name, port_name, init = false, timeout)
                     #puts "added writer with #{timeout} timeout"
-                    entry = PortEntry.new(port, timeout, init)
-                    key = name_service+name+port_name;
-                    @portentries[key] = entry
+                    port_entry = PortEntry.new(port, timeout, init)
+                    key = generate_key(name_service, name, port_name)
+                    @portentries[key] = port_entry
                     #puts "add writer size: #{@writers.length}"
                     if timeout > 0
-                        create_timed_delete(timeout, key)
+                        create_timed_delete(timeout, port_entry)
                     end
-                    entry
+                    port_entry
                 end
                 
                 #timeout == 0 will cancel the running EM timer (re-started at delete)
                 def get(name_service, name, port_name, timeout)
-                    key = name_service+name+port_name
-                    port = @portentries[key]
-                    if port && port.connected?
+                    key = generate_key(name_service, name, port_name)
+                    port_entry = @portentries[key]
+                    if port_entry && port_entry.connected?
                         if timeout == 0
                             #puts "cancelling timer"
-                            EM.cancel_timer(port.timer)
-                            port.timer=nil
+                            EM.cancel_timer(port_entry.timer)
+                            port_entry.timer=nil
                         end
-                        return port 
+                        return port_entry 
+                    else
+                        @portentries.delete(key)
+                        return nil
                     end
-                    @portentries.delete(key)
-                    nil
                 end
         
                 #can take Interger of Time as timeout arg
-                def create_timed_delete(timeout, key)
+                def create_timed_delete(timeout, port_entry)
                     mtimer = EM.add_timer(timeout.to_i) do
-                        port = @portentries[key]
-                        if port #the writer might have been already deleted because it was disconnected
-                            time_left = port.lifetime_left
-                            if time_left > 0
-                                #puts "object has #{time_left} seconds left, #{Time.now}"
-                                create_timed_delete(time_left, key)
-                            else
-                                #puts "timed delete writer #{Time.now}"
-                                @portentries.delete(key)
-                            end
+                        time_left = port_entry.lifetime_left
+                        if time_left > 0
+                            #puts "object has #{time_left} seconds left, #{Time.now}"
+                            create_timed_delete(time_left, port_entry)
+                        else
+                            #puts "timed delete writer #{Time.now}"
+                            @portentries.delete(@portentries.key(port_entry))
                         end
                     end
-                    port = @portentries[key]
-                    port.timer = mtimer
+                    port_entry.timer = mtimer
                 end 
                 
                 # don't delete if there is lifetime left
                 # this may happen, when the port was initially created withpout lifetime (user delete)
                 # but used by another part with a timeout
                 def soft_delete(name_service, name, port_name)
-                    key = name_service+name+port_name
+                    key = generate_key(name_service, name, port_name)
                     #puts key + "soft deleting #{Time.now}"
-                    port = @portentries[key]
-                    if port && port.lifetime_left > 0
-                        create_timed_delete(port.lifetime_left, key)
-                        #puts key + "soft deleting #{Time.now} new timer #{port.lifetime_left}"
+                    port_entry = @portentries[key]
+                    if port_entry && port_entry.lifetime_left > 0
+                        create_timed_delete(port_entry.lifetime_left, port_entry)
+                        #puts key + "soft deleting #{Time.now} new timer #{port_entry.lifetime_left}"
                     else
                         @portentries.delete(key)
                     end
@@ -163,9 +160,13 @@ module Rock
                 
                 #force-delete a port, no matter if there are pending timeouts
                 def delete(name_service, name, port_name)
-                    key = name_service+name+port_name
+                    key = generate_key(name_service, name, port_name)
                     #puts key + "deleting #{Time.now}"
                     @portentries.delete(key)
+                end
+                
+                def generate_key(name_service, name, port_name)
+                    name_service+name+port_name
                 end
                 
             end
