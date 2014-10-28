@@ -16,7 +16,7 @@ module Rock
                 end
                 
                 
-                def self.stream_async_data_to_websocket(env, data_source, count = Float::INFINITY, binary = false)
+                def self.stream_async_data_to_websocket(env, data_source, count = Float::INFINITY, binary)
                     emitted_samples = 0
     
                     # Asynchronous streaming mode
@@ -107,7 +107,8 @@ module Rock
                         optional :timeout, type: Float, default: 2.0
                         optional :poll_period, type: Float, default: 0.05
                         optional :count, type: Integer
-                        optional :binary, type: String, default: "false"
+                        optional :binary, type: Boolean, default: false
+                        optional :init, type: Boolean, default: false
                     end
                     get ':name_service/:name/ports/:port_name/read' do
                         
@@ -121,8 +122,7 @@ module Rock
                         if Faye::WebSocket.websocket?(env)
                             port = port.port.to_async.reader(init: true, pull: true)
                             count = params.fetch(:count, Float::INFINITY)
-                            ws = API.stream_async_data_to_websocket(env, port, count)
-    
+                            ws = API.stream_async_data_to_websocket(env, port, count,params[:binary])
                             status, response = ws.rack_response
                             status status
                             response
