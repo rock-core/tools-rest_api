@@ -50,7 +50,11 @@ module Rock
                     end
                     get do
                         if params[:extended_info]
-                            Hash[tasks: Orocos.name_service.each_task.map(&:to_h)]
+                            tasks = Array.new
+                            Orocos.name_service.each_task do |task|
+                                tasks << task.to_h
+                            end
+                            Hash[tasks: tasks]
                         else
                             Hash[task_names: Orocos.name_service.names]
                         end
