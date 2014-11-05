@@ -44,10 +44,11 @@ module Rock
                     end
                     
                     desc "kill a job"
-
+                    params do
+                        requires :id, type: Integer
+                    end
                     post 'kill' do
-                      mparams = MultiJson.load(request.params["value"])
-                      interface.kill(mparams["id"].to_i)
+                      interface.kill(params[:id])
                     end
                     
                 end
