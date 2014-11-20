@@ -44,6 +44,7 @@ module Rock
                     end
                     
                     desc "kill a job"
+
                     params do
                         requires :id, type: Integer
                     end

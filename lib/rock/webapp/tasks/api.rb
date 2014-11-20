@@ -23,7 +23,14 @@ module Rock
                     ws = Faye::WebSocket.new(env)
     
                     listener = data_source.on_raw_data do |sample|
-                        if !ws.send(MultiJson.dump(Hash[:value => sample.to_json_value(:special_float_values => :string)]))
+                        result = nil
+                        if binary
+                            result = Hash[:mode => :binary, :value => sample.to_json_value(:pack_simple_arrays => true, :special_float_values => :string)]
+                        else
+                            result = Hash[:value => sample.to_json_value(:special_float_values => :string)]    
+                        end
+                        
+                        if !ws.send(MultiJson.dump(result))
                             WebApp.warn "failed to send, closing connection"
                             ws.close
                             listener.stop
@@ -77,7 +84,7 @@ module Rock
                             portentry = API.ports.get(name_service, name, port_name, timeout)
                             if !portentry
                                 port = port_by_task_and_name(name_service, name, port_name)
-                                portentry = API.ports.add(port, name_service, name, port_name,timeout)
+                                portentry = API.ports.add(port, name_service, name, port_name, init, timeout)
                             end
                             portentry
                         end
@@ -96,6 +103,22 @@ module Rock
                         Hash[ports: ports.map(&:to_h)]
                     end
     
+                    desc "returns information about the properties of a given task"
+                    get ':name_service/:name/properties' do
+                        taskhash = Hash[task_by_name(params[:name_service], params[:name]).to_h]
+                        model = taskhash[:model]
+                        Hash[properties: model[:properties]]
+                    end
+                                    
+                    desc "returns information about the seleted property"
+                    get ':name_service/:name/properties/:property_name/read' do
+                        task = task_by_name(params[:name_service], params[:name])
+                        prop = task.property(params[:property_name])
+                        puts prop.raw_read_new.pretty_inspect
+                        #puts prop.to_h
+                        Hash[value: prop.raw_read.to_json_value(:special_float_values => :string)]
+                    end
+                    
                     desc "returns information about the given port"
                     get ':name_service/:name/ports/:port_name' do
                         port = port_by_task_and_name(*params.values_at('name_service', 'name', 'port_name'))
@@ -112,7 +135,7 @@ module Rock
                     end
                     get ':name_service/:name/ports/:port_name/read' do
                         
-                        port = get_port(*params.values_at('name_service', 'name', 'port_name', 'timeout'))
+                        port = get_port(*params.values_at('name_service', 'name', 'port_name', 'init', 'timeout'))
                         #port = port_by_task_and_name(*params.values_at('name_service', 'name', 'port_name'))
     
                         if !port.is_reader?
@@ -133,7 +156,11 @@ module Rock
                             result = Array.new
                             (params[:timeout] / params[:poll_period]).ceil.times do
                                 while sample = reader.raw_read_new
-                                    result << Hash[:value => sample.to_json_value(:special_float_values => :string)]
+                                    if params[:binary] == "false"
+                                        result << Hash[:value => sample.to_json_value(:special_float_values => :string)]
+                                    else
+                                        result << Hash[:mode => :binary, :value => sample.to_json_value(:pack_simple_arrays => true, :special_float_values => :string)]    
+                                    end
                                     if result.size == count
                                         return result
                                     end
@@ -142,6 +169,19 @@ module Rock
                             end
                             error! "did not get any sample from #{params[:name]}.#{params[:port_name]} in #{params[:timeout]} seconds", 408
                         end
+                    end
+
+                    desc "get a json value, which can be re-written to the port (no need to generate from port info)"
+                    get ':name_service/:name/ports/:port_name/sample' do
+                        
+                        writer = get_port(*params.values_at('name_service', 'name', 'port_name', 'timeout'))
+                            
+                        if !writer.is_writer?
+                            error! "#{port.name} is an output port, cannot create a empty sample, use read instead" , 403
+                        end 
+                        
+                        sample = writer.writer.new_sample            
+                        Hash[:value => sample.to_json_value]
                     end
                     
                                        
@@ -160,7 +200,7 @@ module Rock
                         begin
                             obj = MultiJson.load(request.params["value"])
                         rescue MultiJson::ParseError => exception
-                            error! "malformed JSON string", 415
+                            error! "malformed JSON string: #{request.params["value"]}", 415
                         end 
                                              
                         begin
