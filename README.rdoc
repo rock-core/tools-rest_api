@@ -14,5 +14,7 @@ Just run
 rock-webapp
 ```
 
+And open localhost:9292 in a browser
+
 The REST API is under /api/ and the UI under /ui/
 
