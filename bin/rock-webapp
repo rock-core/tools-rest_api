@@ -5,6 +5,7 @@ require 'rack'
 require 'thin'
 require 'orocos'
 require 'rack/static'
+require 'sprockets'
 require 'rock/webapp/tasks'
 require 'rock/webapp/ui'
 
@@ -33,7 +34,11 @@ options = OptionParser.new do |opt|
 end
 options.parse ARGV
 
+# get the package base name to serve directly from the source files
+SRC_DIR = File.expand_path(
+    Pathname.new(File.dirname(__FILE__)).parent)
 
+# set up websocket handling
 Faye::WebSocket.load_adapter('thin')
 thin = Rack::Handler.get('thin')
 EM.next_tick { Rock::WebApp::Tasks.install_event_loop }
@@ -47,7 +52,6 @@ Orocos::CORBA.name_service.ip = name_server_host
 Orocos.initialize
 
 app = Rack::Builder.new do
-    
     #map html uis
     
     #map welcome page
@@ -62,14 +66,25 @@ app = Rack::Builder.new do
     
     #map additional custom uis
     if defined? Rock::WebApp::UI::ADDON_DIR
+        puts "Serving /ui/addon from #{Rock::WebApp::UI::ADDON_DIR}"
         map '/ui/addon' do
             run Rack::Directory.new(Rock::WebApp::UI::ADDON_DIR)
         end
     end
-    
+
+    #map asset handler, which will process the local js files and serve
+    #the client side js code. For now, this will always use sprockets
+    #to serve the assets. In a production system the pipeline would be 
+    #to use a rake task to compile to a static directory, and serve 
+    #statically
+    map '/assets' do
+        environment = Sprockets::Environment.new
+        environment.append_path File.join( SRC_DIR, 'assets', 'js')
+        environment.append_path File.join( SRC_DIR, 'assets', 'css')
+        run environment
+    end
     
     #map the apis
-    
     map '/api/tasks' do
         if !cors_hosts.empty?
             require 'rack/cors'
@@ -83,7 +98,7 @@ app = Rack::Builder.new do
         run Rock::WebApp::Tasks::Root
     end
     
-    if syskit      
+    if syskit
         map '/api/syskit' do
             if !cors_hosts.empty?
                 require 'rack/cors'
