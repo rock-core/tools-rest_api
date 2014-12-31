@@ -3,8 +3,20 @@ var orocos = {}
 
 // now come a bunch of helper functions
 // and configuration values defined in the namespace
+
+/** joins the arguments to a path, e.g. ["a","b"] becomes "a/b"
+*/
 orocos.join_path = function() {
     return Array.prototype.slice.call(arguments).join('/');
+}
+
+/** convert the given relative path to a websocket url
+ * e.g. /ws becomes ws://host/ws
+ */
+orocos.get_websocket_url = function( path ) {
+    // for now don't use any encryption,
+    // but can be added easily be checking if protocol is https
+    return "ws://" + window.location.host + path
 }
 orocos.BASE_URL = "/api/tasks/tasks"
 
@@ -24,6 +36,37 @@ orocos.Port = function(task, name) {
 /** get the url for the REST interface to the port */
 orocos.Port.prototype.getURL = function() {
     return orocos.join_path( this.task.getURL(), "ports", this.name )
+}
+
+/**
+ * get a writer object to the port
+ * Call write on the returned object to send data to the port.
+ * Data is only certain to go through once the onopen callback
+ * has been called.
+ */
+orocos.Port.prototype.writer = function() {
+    var url = orocos.get_websocket_url( this.getURL() + "/write" )
+    var ws = new WebSocket( url )
+    ws.write = function(msg) {
+        var obj = JSON.stringify(msg)
+        this.send( obj )
+    }
+    return ws;
+}
+
+/** get a reader object to the port
+ * pass a callback to this function, which gets called with the received data
+ * type. You can also set the callback as onread
+ */
+orocos.Port.prototype.reader = function( onread ) {
+    var url = orocos.get_websocket_url( this.getURL() + "/read" )
+    var ws = new WebSocket( url )
+    ws.onread = onread
+    ws.onmessage = function( event ) {
+        var obj = JSON.parse( event.data )
+        this.onread( obj )
+    }
+    return ws;
 }
 
 /** @constructor definition for the Task class
