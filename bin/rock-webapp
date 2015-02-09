@@ -52,25 +52,8 @@ Orocos::CORBA.name_service.ip = name_server_host
 Orocos.initialize
 
 app = Rack::Builder.new do
-    #map html uis
-    
-    #map welcome page
-    map '/' do
-        run Rack::File.new(File.join(Rock::WebApp::UI::DIR, 'index.html'))
-    end
-    
-    #map all uis
-    map '/ui' do
-        run Rack::Directory.new(Rock::WebApp::UI::DIR)
-    end
-    
-    #map additional custom uis
-    if defined? Rock::WebApp::UI::ADDON_DIR
-        puts "Serving /ui/addon from #{Rock::WebApp::UI::ADDON_DIR}"
-        map '/ui/addon' do
-            run Rack::Directory.new(Rock::WebApp::UI::ADDON_DIR)
-        end
-    end
+
+    #todo load mappings from plugins 
 
     #map asset handler, which will process the local js files and serve
     #the client side js code. For now, this will always use sprockets
