@@ -7,13 +7,15 @@ require 'orocos'
 require 'rack/static'
 require 'sprockets'
 require 'rock/webapp/tasks'
-require 'rock/webapp/ui'
 
 thin_host = '0.0.0.0'
 thin_port = 9292
 name_server_host = 'localhost'
 cors_hosts = []
 syskit = false
+config_dir = ENV['ROCK_WEBAPP']
+src_dir = File.expand_path(
+    Pathname.new(File.dirname(__FILE__)).parent)
 
 options = OptionParser.new do |opt|
     opt.on('--host host', String, 'the host of the name server that should be contacted (default to localhost)') do |host|
@@ -31,12 +33,11 @@ options = OptionParser.new do |opt|
     opt.on('--enable-syskit',"load syskit support") do
         syskit=true
     end
+    opt.on('--config-dir dir', String, 'directory where the configuration can be found') do |dir|
+        config_dir = dir
+    end
 end
 options.parse ARGV
-
-# get the package base name to serve directly from the source files
-SRC_DIR = File.expand_path(
-    Pathname.new(File.dirname(__FILE__)).parent)
 
 # set up websocket handling
 Faye::WebSocket.load_adapter('thin')
@@ -52,8 +53,24 @@ Orocos::CORBA.name_service.ip = name_server_host
 Orocos.initialize
 
 app = Rack::Builder.new do
+    # create a sprockets environment, and allow plugins to add paths
+    # to it
+    environment = Sprockets::Environment.new
+    environment.append_path File.join( src_dir, 'assets', 'js')
+    environment.append_path File.join( src_dir, 'assets', 'css')
 
-    #todo load mappings from plugins 
+    # load the ruby files in the plugin dir, and call instance_eval
+    # in this way, the plugins can register mappings using the same syntax
+    if config_dir 
+        plugin_dir = File.expand_path( File.join( config_dir, "plugins" ) )
+        if File.directory? plugin_dir
+            # for that, add the directory to the ruby load path
+            $:.unshift( plugin_dir ) unless $:.include? plugin_dir 
+            Dir.glob File.join( plugin_dir, "*.rb" ) do |file|
+                instance_eval File.read( file )
+            end
+        end
+    end
 
     #map asset handler, which will process the local js files and serve
     #the client side js code. For now, this will always use sprockets
@@ -61,9 +78,6 @@ app = Rack::Builder.new do
     #to use a rake task to compile to a static directory, and serve 
     #statically
     map '/assets' do
-        environment = Sprockets::Environment.new
-        environment.append_path File.join( SRC_DIR, 'assets', 'js')
-        environment.append_path File.join( SRC_DIR, 'assets', 'css')
         run environment
     end
     
