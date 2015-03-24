@@ -15,6 +15,7 @@
   <!--   libraries for the library implementation itself -->
   <depend package="rack-cors"/>
   <depend package="faye-websocket"/>
+  <depend package="sprockets"/>
   <!-- gems required for testing. They are commented out as we don't want
          everyone to install them -->
   <!-- gem install rack-test flexmock minitest-em-sync -->
