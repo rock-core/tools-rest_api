@@ -230,6 +230,21 @@ module Rock
                         end
                         
                     end
+                    
+                    get ':name_service/:name/ports/:port_name/connect' do
+                        puts "connecting to #{request.params["to"]}"
+                        target = port_by_task_and_name(*params.values_at('name_service', 'to', 'port'))
+                        source = port_by_task_and_name(*params.values_at('name_service', 'name', 'port_name'))
+                        source.connect_to target    
+                    end
+                    
+                    get ':name_service/:name/ports/:port_name/disconnect' do
+                        puts "connecting to #{request.params["from"]}"
+                        target = port_by_task_and_name(*params.values_at('name_service', 'from', 'port'))
+                        source = port_by_task_and_name(*params.values_at('name_service', 'name', 'port_name'))
+                        source.disconnect_from target    
+                    end
+                    
                 end
             end
         end
