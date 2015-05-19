@@ -231,15 +231,28 @@ module Rock
                         
                     end
                     
+                    desc 'connect a port, /connect&to=taskname&port=portname, optional &type=buffer&size=10'
+                    params do
+                        requires :to, :port
+                        optional :type, type: String, default: "data"
+                        optional :size, type: Integer, default: 10
+                    end
                     get ':name_service/:name/ports/:port_name/connect' do
-                        puts "connecting to #{request.params["to"]}"
                         target = port_by_task_and_name(*params.values_at('name_service', 'to', 'port'))
-                        source = port_by_task_and_name(*params.values_at('name_service', 'name', 'port_name'))
-                        source.connect_to target    
+                        source = port_by_task_and_name(*params.values_at('name_service', 'name', 'port_name'))                        
+                        if request.params["type"] == "buffer"
+                            source.connect_to target, :type => :buffer, :size => request.params["size"]
+                        else
+                            source.connect_to target    
+                        end
+                         
                     end
                     
+                    desc 'disconnect a port /disconnect&from=taskname&port=portname'
+                    params do
+                        requires :from, :name
+                    end
                     get ':name_service/:name/ports/:port_name/disconnect' do
-                        puts "connecting to #{request.params["from"]}"
                         target = port_by_task_and_name(*params.values_at('name_service', 'from', 'port'))
                         source = port_by_task_and_name(*params.values_at('name_service', 'name', 'port_name'))
                         source.disconnect_from target    
