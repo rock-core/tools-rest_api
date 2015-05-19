@@ -258,6 +258,13 @@ module Rock
                         source.disconnect_from target    
                     end
                     
+                    desc 'disconnect a port completely'
+                    get ':name_service/:name/ports/:port_name/disconnect_all' do
+                        port = port_by_task_and_name(*params.values_at('name_service', 'from', 'port'))
+                        port.disconnect_all    
+                    end
+                    
+                    
                 end
             end
         end
