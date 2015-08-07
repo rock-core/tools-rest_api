@@ -89,6 +89,12 @@ module Rock
                             portentry
                         end
                         
+                        def get_operation(name_service, name, operation_name)
+                            task_by_name(name_service, name).operation(operation_name)
+                         rescue Orocos::NotFound
+                            error! "cannot find operation #{operation_name} on task #{name_service}/#{name}", 404
+                        end
+                        
                     end
     
                     desc "Lists information about a given task"
@@ -114,8 +120,6 @@ module Rock
                     get ':name_service/:name/properties/:property_name/read' do
                         task = task_by_name(params[:name_service], params[:name])
                         prop = task.property(params[:property_name])
-                        puts prop.raw_read_new.pretty_inspect
-                        #puts prop.to_h
                         Hash[value: prop.raw_read.to_json_value(:special_float_values => :string)]
                     end
                     
@@ -268,6 +272,44 @@ module Rock
                         port.disconnect_all    
                     end
                     
+                    
+                    desc 'list operations'
+                    get ':name_service/:name/operations/' do
+                        taskhash = Hash[task_by_name(params[:name_service], params[:name]).to_h]
+                        model = taskhash[:model]
+                        Hash[operations: model[:operations]]
+                    end
+                    
+                    desc 'get operation parameters sample'
+                    get ':name_service/:name/operations/:operation/example_arguments' do
+                        op = get_operation(params[:name_service], params[:name],params[:operation])
+                        paramarray = Array.new 
+                        op.arguments_types.each do |elem|
+                            entry = elem.new
+                            paramarray << entry.to_json_value(:special_float_values => :string)
+                        end
+                        Hash[:args => paramarray]
+                    end
+                    
+                    desc 'run operation'
+                    post ':name_service/:name/operations/:operation' do
+                        op = get_operation(params[:name_service], params[:name],params[:operation])
+                            
+                        begin
+                            obj = MultiJson.load(request.params["value"])
+                        rescue MultiJson::ParseError => exception
+                            error! "malformed JSON string: #{request.params["value"]}", 415
+                        end
+                        
+                        begin
+                            params = obj["args"]
+                            return op.callop(*params);
+                        rescue Typelib::UnknownConversionRequested => exception
+                            error! "argument type mismatch" , 406
+                        rescue Exception => ex
+                            error! "unable to write to call operation #{ex}", 404
+                        end  
+                    end
                     
                 end
             end

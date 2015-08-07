@@ -1,8 +1,7 @@
-# A REST API to interface with a Rock system
-
-* http://rock-robotics.org
 
 ## DESCRIPTION:
+
+A REST API to interface with a Rock system (http://rock-robotics.org) via http
 
 
 Best used together with the "gui/rock_webapp" package (https://github.com/rock-core/gui-rock_webapp) which provides some html pages
@@ -20,7 +19,6 @@ The result will encode any array data types in base64 encoded arrays encapsulate
 In your rock installation install "tools/rest_api" for the api only or "gui/rock_webapp" for additional browser pages
 
 ## Running
-
 
 Just run
 
@@ -86,6 +84,19 @@ Every time new data is available on the post, a update is automatically send
 to the clients websocket, where the according callback is called.
 The websocket api is includes in any modern webbroswer and is also available
 for several programming languages.
+
+### Calling Operations
+
+Operations can be listed using:
+ * http://localhost:9292/api/tasks/tasks/+TASKNAME+/operations
+ * the argument json specification of the arguments can be requested:
+ * http://localhost:9292/api/tasks/tasks/+TASKNAME+/operations/+OPERATION_NAME/sample
+
+ Calling an Operation requires an POST http call submitting the arguments in an array called "args" : curl -X POST -d 'value={"args": [{"position": {"data": [1,1,0]}},"test"]}' URL
+
+ The URL can provide an argument whether the call should block until the operation is finished or not
+ * http://localhost:9292/api/tasks/tasks/+TASKNAME+/operations/+OPERATION_NAME?blocking=true
+
 
 ## Connect and disconnect ports
 
