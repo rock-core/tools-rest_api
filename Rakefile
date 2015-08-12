@@ -1,6 +1,6 @@
 task :default
 
-package_name = 'webapp'
+package_name = 'rest_api'
 begin
     require 'hoe'
 
