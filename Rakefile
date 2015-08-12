@@ -17,6 +17,7 @@ begin
         self.summary = 'A REST API and in-browser UI to interface with a Rock system'
         self.readme_file = FileList['README*'].first
         self.description = paragraphs_of(readme_file, 3..5).join("\n\n")
+        self.version = 0.1
 
         self.spec_extras = {
             :required_ruby_version => '>= 1.8.7'

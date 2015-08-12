@@ -1,7 +1,9 @@
+# A REST API to interface with a Rock system
+
+* http://rock-robotics.org
 
 ## DESCRIPTION:
 
-A REST API to interface with a Rock system (http://rock-robotics.org) via http
 
 Best used together with the "gui/rock_webapp" package (https://github.com/rock-core/gui-rock_webapp) which provides some html pages
 with JavaScript controls.
