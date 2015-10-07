@@ -110,9 +110,27 @@ To disconnect all:
 
 to control robots directly, you can use [CURL](http://curl.haxx.se/) (or libcurl)
 
- * Request: curl http://localhost:9292/api/syskit/jobs
+### api/tasks
+    curl http://localhost:9292/api/tasks/tasks/localhost/trajectory_follower/ports/motion_command/sample
 
- * Write:   curl -X POST -H "Content-Type: application/json" -d '{"id":9}' http://localhost:9292/api/syskit/jobs/kill<br><br>
+  returns
+
+    {"value":{"translation":5.081281e-316,"rotation":4.29623755e-316}}
+
+In order write the port, we need to create a POST paramater from this JSON representation:
+
+    value={"translation":5.081281e-316,"rotation":4.29623755e-316}
+
+So we need this line to write the port:
+
+    curl -X POST -d 'value={"translation":1,"rotation":1}' http://localhost:9292/api/tasks/tasks/localhost/simple_controller/ports/motion_command/write
+
+
+### api/syskit
+
+  * Request: curl http://localhost:9292/api//jobs
+
+  * Write:   curl -X POST -H "Content-Type: application/json" -d '{"id":9}' http://localhost:9292/api/syskit/jobs/kill<br><br>
 
 
 ## Addons
