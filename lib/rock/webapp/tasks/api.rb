@@ -65,9 +65,13 @@ module Rock
     
                     helpers do
                         def task_by_name(name_service, name)
-                            Orocos.name_service.get "#{name_service}/#{name}"
+                            if name_service == '*'
+                                Orocos.name_service.get name
+                            else
+                                Orocos.name_service.get "#{name_service}/#{name}"
+                            end
                         rescue Orocos::NotFound
-                            error! "cannot find #{name_service}/#{name} on the registered name services", 404
+                            error! "cannot find task #{name_service}/#{name} on the registered name services", 404
                         end
     
                         def port_by_task_and_name(name_service, name, port_name)
