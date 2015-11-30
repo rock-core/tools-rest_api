@@ -160,10 +160,10 @@ module Rock
                             result = Array.new
                             (params[:timeout] / params[:poll_period]).ceil.times do
                                 while sample = reader.raw_read_new
-                                    if params[:binary] == "false"
-                                        result << Hash[:value => sample.to_json_value(:special_float_values => :string)]
+                                    if params[:binary]
+                                        result << Hash[:mode => :binary, :value => sample.to_json_value(:pack_simple_arrays => true, :special_float_values => :string)]
                                     else
-                                        result << Hash[:mode => :binary, :value => sample.to_json_value(:pack_simple_arrays => true, :special_float_values => :string)]    
+                                        result << Hash[:value => sample.to_json_value(:special_float_values => :string)]    
                                     end
                                     if result.size == count
                                         return result
