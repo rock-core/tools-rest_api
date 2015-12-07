@@ -82,7 +82,7 @@ describe Rock::WebApp::Tasks do
             it "returns property names" do
                 with_stub_task_context "task" do |task|
                     get "/tasks/localhost/task/properties"
-                    assert_equal 201, last_response.status
+                    assert_equal 200, last_response.status
                     model = task.model.properties.to_h
                     properties = Array.new
                     expected = Hash[properties: properties]
@@ -90,21 +90,26 @@ describe Rock::WebApp::Tasks do
                 end
             end
             
+            it "reads a property" do
+                with_stub_task_context "task" do |task|
+                    task.create_property("testprop","int")
+                    task.testprop = 42
+                    get "/tasks/localhost/task/properties/testprop/read"
+                    assert_equal 200, last_response.status
+                    expected = Hash[value: 42]
+                    assert_equal expected, MultiJson.load(last_response.body, symbolize_keys: true)
+                end
+            end
+            
             it "writes a property" do
                 with_stub_task_context "task" do |task|
-
                     task.create_property("testprop","int")
                     task.testprop = 0
-                                        
                     post "/tasks/localhost/task/properties/testprop/write" , value: "{\"text\"=10"
                     assert_equal 415, last_response.status
-                    
-
                     post "/tasks/localhost/task/properties/testprop/write" , value: "{\"value\": 10}"
                     assert_equal 201, last_response.status
-                    
                     assert_equal 10, task.testprop
-                    
                 end
                 
             end
