@@ -101,26 +101,45 @@ module Rock
                     get ':name_service/:name' do
                         Hash[task: task_by_name(params[:name_service], params[:name]).to_h]
                     end
+                    
+                    desc "returns information about the properties of a given task"
+                    get ':name_service/:name/properties' do
+                        task = task_by_name(params[:name_service], params[:name])
+                        Hash[properties: task.property_names]
+                    end
+                                    
+                    desc "read the seleted property"
+                    get ':name_service/:name/properties/:property_name/read' do
+                        task = task_by_name(params[:name_service], params[:name])
+                        prop = task.property(params[:property_name])
+                        Hash[value: prop.raw_read.to_json_value(:special_float_values => :string)]
+                    end
+                    
+                    desc "writes a property"
+                    post ':name_service/:name/properties/:property_name/write' do
+                        task = task_by_name(params[:name_service], params[:name])
+                        prop = task.property(params[:property_name])
+                            
+                        begin
+                            obj = MultiJson.load(request.params["value"])
+                        rescue MultiJson::ParseError => exception
+                            error! "malformed JSON string: #{request.params["value"]}", 415
+                        end 
+                                             
+                        begin
+                            return prop.write(obj["value"])
+                        rescue Typelib::UnknownConversionRequested => exception
+                            error! "property type mismatch", 406
+                        rescue Exception => ex
+                            error! "unable to write to property #{ex}", 404
+                        end  
+                    end
     
                     desc "Lists all ports of the task"
                     get ':name_service/:name/ports' do
                         task = task_by_name(params[:name_service], params[:name])
                         ports = task.each_port.map(&:model)
                         Hash[ports: ports.map(&:to_h)]
-                    end
-    
-                    desc "returns information about the properties of a given task"
-                    get ':name_service/:name/properties' do
-                        taskhash = Hash[task_by_name(params[:name_service], params[:name]).to_h]
-                        model = taskhash[:model]
-                        Hash[properties: model[:properties]]
-                    end
-                                    
-                    desc "returns information about the seleted property"
-                    get ':name_service/:name/properties/:property_name/read' do
-                        task = task_by_name(params[:name_service], params[:name])
-                        prop = task.property(params[:property_name])
-                        Hash[value: prop.raw_read.to_json_value(:special_float_values => :string)]
                     end
                     
                     desc "returns information about the given port"

@@ -2,7 +2,7 @@ require 'minitest/spec'
 require 'rack/test'
 require 'orocos'
 require 'orocos/test'
-require 'rock/webapp'
+require 'rock/webapp/tasks'
 require 'rack'
 require 'minitest/em_sync'
 
@@ -18,11 +18,13 @@ describe Rock::WebApp::Tasks do
     end
 
     def app
-        @app ||= Rock::WebApp::Root.new
+        EM.next_tick { Rock::WebApp::Tasks.install_event_loop }
+        @app ||= Rock::WebApp::Tasks::Root.new
+        
     end
 
     def with_stub_task_context(task_name)
-        ruby_task = Orocos::RubyTaskContext.new task_name
+        ruby_task = Orocos::RubyTasks::TaskContext.new task_name
         yield(ruby_task)
     ensure
         ruby_task.dispose if ruby_task
@@ -74,6 +76,44 @@ describe Rock::WebApp::Tasks do
                         MultiJson.load(last_response.body, symbolize_keys: true)
                 end
             end
+        end
+        
+        describe "GET /:namespace/:properties" do
+            it "returns property names" do
+                with_stub_task_context "task" do |task|
+                    get "/tasks/localhost/task/properties"
+                    assert_equal 200, last_response.status
+                    model = task.model.properties.to_h
+                    properties = Array.new
+                    expected = Hash[properties: properties]
+                    assert_equal expected, MultiJson.load(last_response.body, symbolize_keys: true)
+                end
+            end
+            
+            it "reads a property" do
+                with_stub_task_context "task" do |task|
+                    task.create_property("testprop","int")
+                    task.testprop = 42
+                    get "/tasks/localhost/task/properties/testprop/read"
+                    assert_equal 200, last_response.status
+                    expected = Hash[value: 42]
+                    assert_equal expected, MultiJson.load(last_response.body, symbolize_keys: true)
+                end
+            end
+            
+            it "writes a property" do
+                with_stub_task_context "task" do |task|
+                    task.create_property("testprop","int")
+                    task.testprop = 0
+                    post "/tasks/localhost/task/properties/testprop/write" , value: "{\"text\"=10"
+                    assert_equal 415, last_response.status
+                    post "/tasks/localhost/task/properties/testprop/write" , value: "{\"value\": 10}"
+                    assert_equal 201, last_response.status
+                    assert_equal 10, task.testprop
+                end
+                
+            end
+            
         end
 
         describe "GET /:namespace/:name/ports" do
