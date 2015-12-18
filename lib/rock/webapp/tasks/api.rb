@@ -138,8 +138,7 @@ module Rock
                     desc "Lists all ports of the task"
                     get ':name_service/:name/ports' do
                         task = task_by_name(params[:name_service], params[:name])
-                        ports = task.each_port.map(&:model)
-                        Hash[ports: ports.map(&:to_h)]
+                        Hash[ports: task.port_names]
                     end
                     
                     desc "returns information about the given port"
@@ -203,7 +202,7 @@ module Rock
                             error! "#{port.name} is an output port, cannot create a empty sample, use read instead" , 403
                         end 
                         
-                        sample = writer.writer.new_sample            
+                        sample = writer.writer.new_sample.zero!
                         Hash[:value => sample.to_json_value]
                     end
                     
@@ -304,7 +303,7 @@ module Rock
                         op = get_operation(params[:name_service], params[:name],params[:operation])
                         paramarray = Array.new 
                         op.arguments_types.each do |elem|
-                            entry = elem.new
+                            entry = elem.new.zero!
                             paramarray << entry.to_json_value(:special_float_values => :string)
                         end
                         Hash[:args => paramarray]
