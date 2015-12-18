@@ -202,7 +202,7 @@ module Rock
                             error! "#{port.name} is an output port, cannot create a empty sample, use read instead" , 403
                         end 
                         
-                        sample = writer.writer.new_sample            
+                        sample = writer.writer.new_sample.zero!
                         Hash[:value => sample.to_json_value]
                     end
                     
@@ -303,7 +303,7 @@ module Rock
                         op = get_operation(params[:name_service], params[:name],params[:operation])
                         paramarray = Array.new 
                         op.arguments_types.each do |elem|
-                            entry = elem.new
+                            entry = elem.new.zero!
                             paramarray << entry.to_json_value(:special_float_values => :string)
                         end
                         Hash[:args => paramarray]
