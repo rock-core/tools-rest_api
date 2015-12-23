@@ -321,7 +321,7 @@ module Rock
                         
                         begin
                             params = obj["args"]
-                            return op.callop(*params);
+                            return op.callop(*params).to_json_value(:special_float_values => :string);
                         rescue Typelib::UnknownConversionRequested => exception
                             error! "argument type mismatch" , 406
                         rescue Exception => ex
