@@ -11,6 +11,7 @@ require 'rock/webapp/tasks'
 thin_host = '0.0.0.0'
 thin_port = 9292
 name_server_host = 'localhost'
+additional_name_server_hosts=[]
 cors_hosts = []
 syskit = false
 config_dir = ENV['ROCK_WEBAPP']
@@ -21,6 +22,9 @@ options = OptionParser.new do |opt|
     opt.on('--host host', String, 'the host of the name server that should be contacted (default to localhost)') do |host|
         name_server_host = host
     end
+    opt.on('--add-host host', String, 'the host of the name server that should be added to the connected hosts') do |host|
+        additional_name_server_hosts << host
+    end    
     opt.on('--bind host', String, 'the host the server should bind to (default to 0.0.0.0)') do |host|
         thin_host = host
     end
@@ -50,6 +54,9 @@ if syskit
 end
 
 Orocos::CORBA.name_service.ip = name_server_host
+additional_name_server_hosts.each do |host_address|
+    Orocos::name_service << Orocos::CORBA::NameService.new(host_address)
+end
 Orocos.initialize
 
 app = Rack::Builder.new do
