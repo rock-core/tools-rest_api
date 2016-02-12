@@ -25,9 +25,9 @@ module Rock
                     listener = data_source.on_raw_data do |sample|
                         result = nil
                         if binary
-                            result = Hash[:mode => :binary, :value => sample.to_json_value(:pack_simple_arrays => true, :special_float_values => :string)]
+                            result = Hash[mode: :binary, value: sample.to_json_value(pack_simple_arrays: true, special_float_values: :string)]
                         else
-                            result = Hash[:value => sample.to_json_value(:special_float_values => :string)]    
+                            result = Hash[value: sample.to_json_value(special_float_values: :string)]    
                         end
                         
                         if !ws.send(MultiJson.dump(result))
@@ -112,7 +112,7 @@ module Rock
                     get ':name_service/:name/properties/:property_name/read' do
                         task = task_by_name(params[:name_service], params[:name])
                         prop = task.property(params[:property_name])
-                        Hash[value: prop.raw_read.to_json_value(:special_float_values => :string)]
+                        Hash[value: prop.raw_read.to_json_value(special_float_values: :string)]
                     end
                     
                     desc "writes a property"
@@ -179,9 +179,9 @@ module Rock
                             (params[:timeout] / params[:poll_period]).ceil.times do
                                 while sample = reader.raw_read_new
                                     if params[:binary]
-                                        result << Hash[:mode => :binary, :value => sample.to_json_value(:pack_simple_arrays => true, :special_float_values => :string)]
+                                        result << Hash[mode: :binary, value: sample.to_json_value(pack_simple_arrays: true, special_float_values: :string)]
                                     else
-                                        result << Hash[:value => sample.to_json_value(:special_float_values => :string)]    
+                                        result << Hash[value: sample.to_json_value(special_float_values: :string)]    
                                     end
                                     if result.size == count
                                         return result
@@ -304,7 +304,7 @@ module Rock
                         paramarray = Array.new 
                         op.arguments_types.each do |elem|
                             entry = elem.new.zero!
-                            paramarray << entry.to_json_value(:special_float_values => :string)
+                            paramarray << entry.to_json_value(special_float_values: :string)
                         end
                         Hash[:args => paramarray]
                     end
@@ -321,7 +321,12 @@ module Rock
                         
                         begin
                             params = obj["args"]
-                            return op.callop(*params).to_json_value(:special_float_values => :string);
+                            result=op.callop(*params)
+                            if result.respond_to?(:to_json_value)
+                                return result.to_json_value(special_float_values: :string);
+                            else
+                                return result
+                            end
                         rescue Typelib::UnknownConversionRequested => exception
                             error! "argument type mismatch" , 406
                         rescue Exception => ex
