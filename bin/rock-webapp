@@ -1,3 +1,5 @@
 #! /usr/bin/env ruby
 
-puts "'rock-webapp' is deprecated, please use 'rock-rest-api'"
+STDERR.puts "'rock-webapp' is deprecated, please use 'rock-rest-api'"
+
+exec "rock-rest-api", *ARGV
