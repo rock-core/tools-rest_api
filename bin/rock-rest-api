@@ -62,7 +62,7 @@ name_server_hosts.shift
 
 #add the remaining additional name servers
 name_server_hosts.each do |host_address|
-    Orocos::name_service << Orocos::CORBA::NameService.new(host_address)
+    Orocos.name_service << Orocos::CORBA::NameService.new(host_address)
 end
 Orocos.initialize
 
