@@ -102,6 +102,55 @@ module Rock
                         Hash[task: task_by_name(params[:name_service], params[:name]).to_h]
                     end
                     
+                    desc "starts a task"
+                    get ':name_service/:name/start' do
+                        task = task_by_name(params[:name_service], params[:name])
+                        begin
+                            task.start
+                            return task.rtt_state == :RUNNING
+                        rescue Orocos::StateTransitionFailed => exception
+                            puts exception.pretty_inspect
+                            error! "#{exception}" ,405
+                        end
+
+                    end
+                    
+                    desc "stop a task"
+                    get ':name_service/:name/stop' do
+                        task = task_by_name(params[:name_service], params[:name])
+                        begin
+                            task.stop
+                            return task.rtt_state == :STOPPED
+                        rescue Orocos::StateTransitionFailed => exception
+                            puts exception.pretty_inspect
+                            error! "#{exception}" ,405
+                        end
+                    end
+                    
+                    desc "configure a task"
+                    get ':name_service/:name/configure' do
+                        task = task_by_name(params[:name_service], params[:name])
+                        begin
+                            task.configure
+                            return task.rtt_state == :STOPPED
+                        rescue Orocos::StateTransitionFailed => exception
+                            puts exception.pretty_inspect
+                            error! "#{exception}" ,405
+                        end
+                    end
+                    
+                    desc "cleanup a task"
+                    get ':name_service/:name/cleanup' do
+                        task = task_by_name(params[:name_service], params[:name])
+                        begin
+                            task.cleanup
+                            return task.rtt_state == :PRE_OPERATIONAL
+                        rescue Orocos::StateTransitionFailed => exception
+                            puts exception.pretty_inspect
+                            error! "#{exception}" ,405
+                        end
+                    end
+                    
                     desc "returns information about the properties of a given task"
                     get ':name_service/:name/properties' do
                         task = task_by_name(params[:name_service], params[:name])
