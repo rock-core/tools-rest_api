@@ -102,55 +102,6 @@ module Rock
                         Hash[task: task_by_name(params[:name_service], params[:name]).to_h]
                     end
                     
-                    desc "starts a task"
-                    get ':name_service/:name/start' do
-                        task = task_by_name(params[:name_service], params[:name])
-                        begin
-                            task.start
-                            return task.rtt_state == :RUNNING
-                        rescue Orocos::StateTransitionFailed => exception
-                            puts exception.pretty_inspect
-                            error! "#{exception}" ,405
-                        end
-
-                    end
-                    
-                    desc "stop a task"
-                    get ':name_service/:name/stop' do
-                        task = task_by_name(params[:name_service], params[:name])
-                        begin
-                            task.stop
-                            return task.rtt_state == :STOPPED
-                        rescue Orocos::StateTransitionFailed => exception
-                            puts exception.pretty_inspect
-                            error! "#{exception}" ,405
-                        end
-                    end
-                    
-                    desc "configure a task"
-                    get ':name_service/:name/configure' do
-                        task = task_by_name(params[:name_service], params[:name])
-                        begin
-                            task.configure
-                            return task.rtt_state == :STOPPED
-                        rescue Orocos::StateTransitionFailed => exception
-                            puts exception.pretty_inspect
-                            error! "#{exception}" ,405
-                        end
-                    end
-                    
-                    desc "cleanup a task"
-                    get ':name_service/:name/cleanup' do
-                        task = task_by_name(params[:name_service], params[:name])
-                        begin
-                            task.cleanup
-                            return task.rtt_state == :PRE_OPERATIONAL
-                        rescue Orocos::StateTransitionFailed => exception
-                            puts exception.pretty_inspect
-                            error! "#{exception}" ,405
-                        end
-                    end
-                    
                     desc "returns information about the properties of a given task"
                     get ':name_service/:name/properties' do
                         task = task_by_name(params[:name_service], params[:name])
@@ -381,6 +332,26 @@ module Rock
                         rescue Exception => ex
                             error! "unable to write to call operation #{ex}", 404
                         end  
+                    end
+                    
+                    desc "management for running tasks ('start', 'stop', 'configure', 'cleanup')"
+                    # has to be defined after other requests e.g. ':name_service/:name/properties' or ':name_service/:name/ports'
+                    # in order to be evalueated after them, otherwise this would catch the other requests and return false  
+                    get ':name_service/:name/:action' do
+                        task = task_by_name(params[:name_service], params[:name])
+                        action = params[:action]
+                        #check for allowed actions for securiry reasons
+                        #otherwise all the tasks methods could be called using this interface
+                        if ['start', 'stop', 'configure', 'cleanup'].include? action
+                            begin
+                                task.send(action)
+                                return true
+                            rescue Orocos::StateTransitionFailed => exception
+                                error! "#{exception}" ,405
+                            end
+                        else
+                            error! "Method '#{action}' on task '#{params[:name_service]}/#{params[:name]}' is not allowed to be called using the rest api" ,405
+                        end
                     end
                     
                 end
