@@ -342,7 +342,7 @@ module Rock
                         action = params[:action]
                         #check for allowed actions for securiry reasons
                         #otherwise all the tasks methods could be called using this interface
-                        if ['start', 'stop', 'configure', 'cleanup'].include? action
+                        if ['start', 'stop', 'configure', 'cleanup', 'reset_exception'].include? action
                             begin
                                 task.send(action)
                                 return true
