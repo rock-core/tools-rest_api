@@ -3,7 +3,7 @@ require 'rock/webapp/tasks/cached_ports'
 module Rock
     module WebApp
         module Tasks    
-            
+                      
             class API < Grape::API
                 version 'v1', using: :header, vendor: :rock
                 format :json
@@ -15,6 +15,8 @@ module Rock
                     @ports
                 end
                 
+                #http://stackoverflow.com/questions/106179/regular-expression-to-match-dns-hostname-or-ip-address
+                ValidHostnameRegex = /(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])/
                 
                 def self.stream_async_data_to_websocket(env, data_source, count = Float::INFINITY, binary)
                     emitted_samples = 0
@@ -96,27 +98,27 @@ module Rock
                         end
                         
                     end
-    
+                   
                     desc "Lists information about a given task"
-                    get ':name_service/:name' do
+                    get ':name_service/:name', :requirements => { :name_service => ValidHostnameRegex } do
                         Hash[task: task_by_name(params[:name_service], params[:name]).to_h]
                     end
                     
                     desc "returns information about the properties of a given task"
-                    get ':name_service/:name/properties' do
+                    get ':name_service/:name/properties', :requirements => { :name_service => ValidHostnameRegex } do
                         task = task_by_name(params[:name_service], params[:name])
                         Hash[properties: task.property_names]
                     end
                                     
                     desc "read the seleted property"
-                    get ':name_service/:name/properties/:property_name/read' do
+                    get ':name_service/:name/properties/:property_name/read', :requirements => { :name_service => ValidHostnameRegex } do
                         task = task_by_name(params[:name_service], params[:name])
                         prop = task.property(params[:property_name])
                         Hash[value: prop.raw_read.to_json_value(special_float_values: :string)]
                     end
                     
                     desc "writes a property"
-                    post ':name_service/:name/properties/:property_name/write' do
+                    post ':name_service/:name/properties/:property_name/write', :requirements => { :name_service => ValidHostnameRegex } do
                         task = task_by_name(params[:name_service], params[:name])
                         prop = task.property(params[:property_name])
                             
@@ -136,13 +138,13 @@ module Rock
                     end
     
                     desc "Lists all ports of the task"
-                    get ':name_service/:name/ports' do
+                    get ':name_service/:name/ports', :requirements => { :name_service => ValidHostnameRegex } do
                         task = task_by_name(params[:name_service], params[:name])
                         Hash[ports: task.port_names]
                     end
                     
                     desc "returns information about the given port"
-                    get ':name_service/:name/ports/:port_name' do
+                    get ':name_service/:name/ports/:port_name', :requirements => { :name_service => ValidHostnameRegex } do
                         port = port_by_task_and_name(*params.values_at('name_service', 'name', 'port_name'))
                         Hash[port: port.model.to_h]
                     end
@@ -155,7 +157,7 @@ module Rock
                         optional :binary, type: Boolean, default: false
                         optional :init, type: Boolean, default: false
                     end
-                    get ':name_service/:name/ports/:port_name/read' do
+                    get ':name_service/:name/ports/:port_name/read', :requirements => { :name_service => ValidHostnameRegex } do
                         
                         port = get_port(*params.values_at('name_service', 'name', 'port_name', 'init', 'timeout'))
                         #port = port_by_task_and_name(*params.values_at('name_service', 'name', 'port_name'))
@@ -194,7 +196,7 @@ module Rock
                     end
 
                     desc "get a json value, which can be re-written to the port (no need to generate from port info)"
-                    get ':name_service/:name/ports/:port_name/sample' do
+                    get ':name_service/:name/ports/:port_name/sample', :requirements => { :name_service => ValidHostnameRegex } do
                         
                         writer = get_port(*params.values_at('name_service', 'name', 'port_name', 'timeout'))
                             
@@ -211,7 +213,7 @@ module Rock
                     params do
                         optional :timeout, type: Integer, default: 30
                     end
-                    post ':name_service/:name/ports/:port_name/write' do
+                    post ':name_service/:name/ports/:port_name/write', :requirements => { :name_service => ValidHostnameRegex } do
  
                         writer = get_port(*params.values_at('name_service', 'name', 'port_name', 'timeout'))
     
@@ -238,7 +240,7 @@ module Rock
                     desc "write a value to a port using a ws"
                     #ws is using a get request, so we can't combine with the post url
                     #bit we can use the same, because it starts with ws://
-                    get ':name_service/:name/ports/:port_name/write' do
+                    get ':name_service/:name/ports/:port_name/write', :requirements => { :name_service => ValidHostnameRegex } do
                         
                         if Faye::WebSocket.websocket?(env)
                             writer = get_port(*params.values_at('name_service', 'name', 'port_name'),false,0)
@@ -263,7 +265,7 @@ module Rock
                         optional :type, type: String, default: "data"
                         optional :size, type: Integer, default: 10
                     end
-                    get ':name_service/:name/ports/:port_name/connect' do
+                    get ':name_service/:name/ports/:port_name/connect', :requirements => { :name_service => ValidHostnameRegex } do
                         target = port_by_task_and_name(*params.values_at('name_service', 'to', 'port'))
                         source = port_by_task_and_name(*params.values_at('name_service', 'name', 'port_name'))                        
                         if request.params["type"] == "buffer"
@@ -278,28 +280,28 @@ module Rock
                     params do
                         requires :from, :name
                     end
-                    get ':name_service/:name/ports/:port_name/disconnect' do
+                    get ':name_service/:name/ports/:port_name/disconnect', :requirements => { :name_service => ValidHostnameRegex } do
                         target = port_by_task_and_name(*params.values_at('name_service', 'from', 'port'))
                         source = port_by_task_and_name(*params.values_at('name_service', 'name', 'port_name'))
                         source.disconnect_from target    
                     end
                     
                     desc 'disconnect a port completely'
-                    get ':name_service/:name/ports/:port_name/disconnect_all' do
+                    get ':name_service/:name/ports/:port_name/disconnect_all', :requirements => { :name_service => ValidHostnameRegex } do
                         port = port_by_task_and_name(*params.values_at('name_service', 'name', 'port_name'))
                         port.disconnect_all    
                     end
                     
                     
                     desc 'list operations'
-                    get ':name_service/:name/operations/' do
+                    get ':name_service/:name/operations/', :requirements => { :name_service => ValidHostnameRegex } do
                         taskhash = Hash[task_by_name(params[:name_service], params[:name]).to_h]
                         model = taskhash[:model]
                         Hash[operations: model[:operations]]
                     end
                     
                     desc 'get operation parameters sample'
-                    get ':name_service/:name/operations/:operation/example_arguments' do
+                    get ':name_service/:name/operations/:operation/example_arguments', :requirements => { :name_service => ValidHostnameRegex } do
                         op = get_operation(params[:name_service], params[:name],params[:operation])
                         paramarray = Array.new 
                         op.arguments_types.each do |elem|
@@ -310,7 +312,7 @@ module Rock
                     end
                     
                     desc 'run operation'
-                    post ':name_service/:name/operations/:operation' do
+                    post ':name_service/:name/operations/:operation', :requirements => { :name_service => ValidHostnameRegex } do
                         op = get_operation(params[:name_service], params[:name],params[:operation])
                             
                         begin
@@ -333,7 +335,7 @@ module Rock
                             error! "unable to write to call operation #{ex}", 404
                         end  
                     end
-                    
+
                     desc "management for running tasks ('start', 'stop', 'configure', 'cleanup', 'reset_exception')"
                     # has to be defined after other requests e.g. ':name_service/:name/properties' or ':name_service/:name/ports'
                     # in order to be evalueated after them, otherwise this would catch the other requests and return false  
@@ -352,7 +354,7 @@ module Rock
                             error! "Method '#{action}' on task '#{params[:name_service]}/#{params[:name]}' is not allowed to be called using the rest api" ,405
                         end
                     end
-                    
+
                 end
             end
         end
