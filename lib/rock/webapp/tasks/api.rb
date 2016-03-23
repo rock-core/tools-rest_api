@@ -334,7 +334,7 @@ module Rock
                         end  
                     end
                     
-                    desc "management for running tasks ('start', 'stop', 'configure', 'cleanup')"
+                    desc "management for running tasks ('start', 'stop', 'configure', 'cleanup', 'reset_exception')"
                     # has to be defined after other requests e.g. ':name_service/:name/properties' or ':name_service/:name/ports'
                     # in order to be evalueated after them, otherwise this would catch the other requests and return false  
                     get ':name_service/:name/:action' do
@@ -345,7 +345,6 @@ module Rock
                         if ['start', 'stop', 'configure', 'cleanup', 'reset_exception'].include? action
                             begin
                                 task.send(action)
-                                return true
                             rescue Orocos::StateTransitionFailed => exception
                                 error! "#{exception}" ,405
                             end
