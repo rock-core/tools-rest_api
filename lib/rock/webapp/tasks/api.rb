@@ -334,6 +334,25 @@ module Rock
                         end  
                     end
                     
+                    desc "management for running tasks ('start', 'stop', 'configure', 'cleanup', 'reset_exception')"
+                    # has to be defined after other requests e.g. ':name_service/:name/properties' or ':name_service/:name/ports'
+                    # in order to be evalueated after them, otherwise this would catch the other requests and return false  
+                    get ':name_service/:name/:action' do
+                        task = task_by_name(params[:name_service], params[:name])
+                        action = params[:action]
+                        #check for allowed actions for securiry reasons
+                        #otherwise all the tasks methods could be called using this interface
+                        if ['start', 'stop', 'configure', 'cleanup', 'reset_exception'].include? action
+                            begin
+                                task.send(action)
+                            rescue Orocos::StateTransitionFailed => exception
+                                error! "#{exception}" ,405
+                            end
+                        else
+                            error! "Method '#{action}' on task '#{params[:name_service]}/#{params[:name]}' is not allowed to be called using the rest api" ,405
+                        end
+                    end
+                    
                 end
             end
         end
