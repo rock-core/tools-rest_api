@@ -11,7 +11,8 @@ describe Rock::WebApp::Tasks do
     include Rack::Test::Methods
 
     before do
-        Orocos::CORBA.name_service.ip = 'localhost'
+        Orocos::CORBA.name_service.ip = '127.0.0.1'
+        Orocos.name_service << Orocos::CORBA::NameService.new("localhost")
         if !Orocos.initialized?
             Orocos.initialize
         end
@@ -51,9 +52,9 @@ describe Rock::WebApp::Tasks do
                         assert_equal 200, last_response.status
                         model = task.model.to_h
                         model[:states] = model[:states].map { |k, v| [k, v.to_s] }
-                        expected = Hash[name: 'localhost/task', model: model, state: 'STOPPED']
-                        assert_equal Hash[tasks: [expected]],
-                                          MultiJson.load(last_response.body, symbolize_keys: true)
+                        expectedip = Hash[name: '127.0.0.1/task', model: model, state: 'PRE_OPERATIONAL']
+                        expectedhost = Hash[name: 'localhost/task', model: model, state: 'PRE_OPERATIONAL']
+                        assert_equal Hash[tasks: [expectedip,expectedhost]], MultiJson.load(last_response.body, symbolize_keys: true)
                     end
                 end
             end
@@ -71,11 +72,36 @@ describe Rock::WebApp::Tasks do
                     assert_equal 200, last_response.status
                     model = task.model.to_h
                     model[:states] = model[:states].map { |k, v| [k, v.to_s] }
-                    expected = Hash[name: 'localhost/task', model: model, state: 'STOPPED']
+                    expected = Hash[name: 'localhost/task', model: model, state: 'PRE_OPERATIONAL']
                     assert_equal Hash[task: expected],
                         MultiJson.load(last_response.body, symbolize_keys: true)
                 end
             end
+            
+            it "works with wildcard" do
+                with_stub_task_context "task" do |task|
+                    get "/tasks/*/task"
+                    assert_equal 200, last_response.status
+                    model = task.model.to_h
+                    model[:states] = model[:states].map { |k, v| [k, v.to_s] }
+                    expected = Hash[name: '127.0.0.1/task', model: model, state: 'PRE_OPERATIONAL']
+                    assert_equal Hash[task: expected],
+                    MultiJson.load(last_response.body, symbolize_keys: true)
+                end
+            end
+            
+            it "works with ip as a namespace" do
+                with_stub_task_context "task" do |task|
+                    get "/tasks/127.0.0.1/task"
+                    assert_equal 200, last_response.status
+                    model = task.model.to_h
+                    model[:states] = model[:states].map { |k, v| [k, v.to_s] }
+                    expected = Hash[name: '127.0.0.1/task', model: model, state: 'PRE_OPERATIONAL']
+                    assert_equal Hash[task: expected],
+                    MultiJson.load(last_response.body, symbolize_keys: true)
+                end
+            end
+            
         end
         
         describe "GET /:namespace/:properties" do

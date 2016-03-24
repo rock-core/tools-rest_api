@@ -15,7 +15,7 @@ module Rock
                 end
 
                 #http://stackoverflow.com/questions/106179/regular-expression-to-match-dns-hostname-or-ip-address
-                ValidHostnameRegex = /(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])/
+                ValidHostnameRegex = /\*|(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])/
 
                 def self.stream_async_data_to_websocket(env, data_source, count = Float::INFINITY, binary)
                     emitted_samples = 0
@@ -198,7 +198,7 @@ module Rock
                     get ':name_service/:name/ports/:port_name/sample', requirements: { name_service: ValidHostnameRegex } do
                         writer = get_port(*params.values_at('name_service', 'name', 'port_name', 'timeout'))
                         if !writer.is_writer?
-                            error! "#{port.name} is an output port, cannot create a empty sample, use read instead" , 403
+                            error! "#{writer.name} is an output port, cannot create a empty sample, use read instead" , 403
                         end
                         sample = writer.writer.new_sample.zero!
                         Hash[:value => sample.to_json_value]
@@ -211,7 +211,7 @@ module Rock
                     post ':name_service/:name/ports/:port_name/write', requirements: { name_service: ValidHostnameRegex } do
                         writer = get_port(*params.values_at('name_service', 'name', 'port_name', 'timeout'))
                         if !writer.is_writer?
-                            error! "#{port.name} is an output port, cannot write" , 403
+                            error! "#{writer.name} is an output port, cannot write" , 403
                         end
 
                         begin
