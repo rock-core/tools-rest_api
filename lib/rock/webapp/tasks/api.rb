@@ -156,24 +156,31 @@ module Rock
                         optional :binary, type: Boolean, default: false
                         optional :init, type: Boolean, default: false
                     end
+
                     get ':name_service/:name/ports/:port_name/read', requirements: { name_service: ValidHostnameRegex } do
-
-                        port = get_port(*params.values_at('name_service', 'name', 'port_name', 'init', 'timeout'))
-                        #port = port_by_task_and_name(*params.values_at('name_service', 'name', 'port_name'))
-
-                        if !port.is_reader?
-                            error! "#{port.name} is an input port, cannot read"
-                        end
-
+                    params do
+                        oprional :proxy, type: Boolean, default: false
+                    end
                         if Faye::WebSocket.websocket?(env)
-                            port = port.port.to_async.reader(init: true, pull: true)
+                            if params["proxy"]
+                                proxy = Orocos::Async.proxy("#{params[:name_service]}/#{params[:name]}")
+                                port = proxy.port(params[:port_name]);
+                            else
+                                port = port_by_task_and_name(*params.values_at('name_service', 'name', 'port_name'))
+                                if !port.is_reader?
+                                    error! "#{port.name} is an input port, cannot read"
+                                end
+                            end
                             count = params.fetch(:count, Float::INFINITY)
                             ws = API.stream_async_data_to_websocket(env, port, count,params[:binary])
                             status, response = ws.rack_response
                             status status
                             response
-
                         else # Direct polling mode
+                            port = get_port(*params.values_at('name_service', 'name', 'port_name', 'init', 'timeout'))
+                            if !port.is_reader?
+                                error! "#{port.name} is an input port, cannot read"
+                            end
                             count = params.fetch(:count, 1)
                             reader = port.reader
                             result = Array.new
