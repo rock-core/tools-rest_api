@@ -329,7 +329,7 @@ module Rock
                     desc "management for running tasks ('start', 'stop', 'configure', 'cleanup', 'reset_exception')"
                     # has to be defined after other requests e.g. ':name_service/:name/properties' or ':name_service/:name/ports'
                     # in order to be evalueated after them, otherwise this would catch the other requests and return false  
-                    get ':name_service/:name/:action' do
+                    get ':name_service/:name/:action', requirements: { name_service: ValidHostnameRegex } do
                         task = task_by_name(params[:name_service], params[:name])
                         action = params[:action]
                         #check for allowed actions for securiry reasons
