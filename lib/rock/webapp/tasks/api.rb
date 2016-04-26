@@ -159,7 +159,7 @@ module Rock
 
                     get ':name_service/:name/ports/:port_name/read', requirements: { name_service: ValidHostnameRegex } do
                     params do
-                        oprional :proxy, type: Boolean, default: false
+                        optional :proxy, type: Boolean, default: false
                     end
                         if Faye::WebSocket.websocket?(env)
                             if params["proxy"]
