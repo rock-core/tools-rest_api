@@ -8,6 +8,7 @@
   <depend package="hoe" />
   <depend package="hoe-yard" />
   <depend package="utilrb" />
+  <depend package="tools/orocos.rb" />
 
   <!--   webserver for bin/rock-webapp -->
   <depend package="thin"/>
@@ -18,5 +19,10 @@
   <depend package="sprockets"/>
   <!-- gems required for testing. They are commented out as we don't want
          everyone to install them -->
-  <!-- gem install rack-test flexmock minitest-em-sync -->
+    
+  <test_depend package='tools/syskit' />
+  <test_depend package='rack-test' />
+  <test_depend package='flexmock' />
+  <test_depend package='minitest' />
+  <test_depend package='minitest-em-sync' />
 </package>
