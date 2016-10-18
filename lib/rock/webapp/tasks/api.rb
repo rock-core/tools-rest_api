@@ -1,4 +1,5 @@
 require 'rock/webapp/tasks/cached_ports'
+require 'grape_logging'
 
 module Rock
     module WebApp
@@ -8,6 +9,12 @@ module Rock
                 version 'v1', using: :header, vendor: :rock
                 format :json
 
+                if ENV["REST_API_LOG_CONSOLE"] == "TRUE"
+                    puts "enabled rest_api logging to console, set environment variable REST_API_LOG_CONSOLE to anything but 'TRUE' to disable"
+                    logger.formatter = GrapeLogging::Formatters::Json.new
+                    use GrapeLogging::Middleware::RequestLogger, {logger: logger}
+                end
+                
                 @ports = CachedPorts.new
 
                 def self.ports

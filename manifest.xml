@@ -13,6 +13,7 @@
   <!--   webserver for bin/rock-webapp -->
   <depend package="thin"/>
   <depend package="grape"/>
+  <depend package="grape_logging"/>
   <!--   libraries for the library implementation itself -->
   <depend package="rack-cors"/>
   <depend package="faye-websocket"/>
