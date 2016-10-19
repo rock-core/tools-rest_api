@@ -162,7 +162,6 @@ module Rock
                         optional :proxy, type: Boolean, default: false
                     end
                         if Faye::WebSocket.websocket?(env)
-                            puts params[:proxy]
                             if params[:proxy] == "true"
                                 if params[:name_service] == '*'
                                     proxy = Orocos::Async.proxy(params[:name])
