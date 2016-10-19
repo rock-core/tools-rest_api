@@ -162,17 +162,24 @@ module Rock
                         optional :proxy, type: Boolean, default: false
                     end
                         if Faye::WebSocket.websocket?(env)
-                            if params["proxy"]
-                                proxy = Orocos::Async.proxy("#{params[:name_service]}/#{params[:name]}")
-                                port = proxy.port(params[:port_name]);
+                            puts params[:proxy]
+                            if params[:proxy] == "true"
+                                if params[:name_service] == '*'
+                                    proxy = Orocos::Async.proxy(params[:name])
+                                else
+                                    proxy = Orocos::Async.proxy("#{params[:name_service]}/#{params[:name]}")
+                                end
+                                portreader = proxy.port(params[:port_name]);
                             else
                                 port = port_by_task_and_name(*params.values_at('name_service', 'name', 'port_name'))
-                                if !port.is_reader?
+                                if !port.respond_to?(:reader)
                                     error! "#{port.name} is an input port, cannot read"
                                 end
+                                portreader = port.to_async.reader(init: true, pull: true)
                             end
+
                             count = params.fetch(:count, Float::INFINITY)
-                            ws = API.stream_async_data_to_websocket(env, port, count,params[:binary])
+                            ws = API.stream_async_data_to_websocket(env, portreader, count,params[:binary])
                             status, response = ws.rack_response
                             status status
                             response
