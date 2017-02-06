@@ -7,6 +7,7 @@ require 'orocos'
 require 'rack/static'
 require 'sprockets'
 require 'rock/webapp/tasks'
+require 'optparse'
 
 thin_host = '0.0.0.0'
 thin_port = 9292
