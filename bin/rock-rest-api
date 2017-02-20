@@ -7,6 +7,7 @@ require 'orocos'
 require 'rack/static'
 require 'sprockets'
 require 'rock/webapp/tasks'
+require 'optparse'
 
 thin_host = '0.0.0.0'
 thin_port = 9292
@@ -30,7 +31,7 @@ options = OptionParser.new do |opt|
         thin_port = port
     end
     opt.on('--enable-cors hosts', Array, "enables Cross-Origin Resource Sharing for sites loaded from the parameter may include localhost host:port, file://. Also multiple values seperated by ','") do |host|
-        cors_hosts = host
+        cors_hosts << host
     end
     opt.on('--enable-syskit',"load syskit support") do
         syskit=true
