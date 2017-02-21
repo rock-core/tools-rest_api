@@ -277,12 +277,14 @@ module Rock
                         optional :size, type: Integer, default: 10
                     end
                     get ':name_service/:name/ports/:port_name/connect', requirements: { name_service: ValidHostnameRegex } do
-                        target = port_by_task_and_name(*params.values_at('name_service', 'to', 'port'))
+                        target_component = Orocos.name_service.get request.params["to"]
+                        target = target_component.port(request.params["port"])
+                        #target = port_by_task_and_name(*params.values_at('name_service', 'to', 'port'))
                         source = port_by_task_and_name(*params.values_at('name_service', 'name', 'port_name'))                        
                         if request.params["type"] == "buffer"
-                            source.connect_to target, :type => :buffer, :size => request.params["size"]
+                            return source.connect_to target, :type => :buffer, :size => request.params["size"]
                         else
-                            source.connect_to target
+                            return source.connect_to target
                         end
 
                     end
@@ -292,9 +294,11 @@ module Rock
                         requires :from, :name
                     end
                     get ':name_service/:name/ports/:port_name/disconnect', requirements: { name_service: ValidHostnameRegex } do
-                        target = port_by_task_and_name(*params.values_at('name_service', 'from', 'port'))
+                        target_component = Orocos.name_service.get request.params["from"]
+                        target = target_component.port(request.params["port"])
+                        #target = port_by_task_and_name(*params.values_at('name_service', 'from', 'port'))
                         source = port_by_task_and_name(*params.values_at('name_service', 'name', 'port_name'))
-                        source.disconnect_from target
+                        return source.disconnect_from target
                     end
 
                     desc 'disconnect a port completely'
