@@ -250,7 +250,7 @@ module Rock
                         end
                     end
 
-                    desc 'connect a port, /connect&to=hostname/taskname&port=portname&host=hostname, optional &type=buffer&size=10'
+                    desc 'connect a port, /connect&to=name_service/taskname&port=portname, optional &type=buffer&size=10'
                     params do
                         requires :to, :port
                         optional :type, type: String, default: "data"
@@ -277,7 +277,7 @@ module Rock
                         res
                     end
 
-                    desc 'disconnect a port /disconnect&from=hostname/taskname&port=portname&host=hostname'
+                    desc 'disconnect a port /disconnect&from=name_service/taskname&port=portname'
                     params do
                         requires :from, :port
                     end
