@@ -1,6 +1,6 @@
 ## DESCRIPTION:
 
-* https://github.com/rock-core/tools-rest_api
+tools-rest_api :: https://github.com/rock-core/tools-rest_api
 
 A REST API to interface with a Rock system (http://rock-robotics.org) via http
 
